@@ -1,0 +1,26 @@
+# Grafana Operator (grafana-operator/grafana-operator)
+#
+# Gestionează CRDs: Grafana, GrafanaDashboard, GrafanaDatasource, GrafanaFolder, GrafanaContactPoint
+#
+# Pattern: definești instanța Grafana ca CR, dashboard-uri și datasource-uri ca CR-uri,
+# operator-ul le sincronizează cu instanța.
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Watch toate namespace-urile
+# Cu valoare goală → cluster-wide (necesar pentru CR-uri din diverse namespace-uri)
+watchNamespace: ""
+
+# Webhook pentru validare CR-uri
+webhook:
+  enabled: true
+
+# Service account pentru operator
+serviceAccount:
+  create: true

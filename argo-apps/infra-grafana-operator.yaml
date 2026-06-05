@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    # Sursa 1: Chart Grafana Operator de pe OCI registry (ghcr.io)
+    - repoURL: ghcr.io/grafana/helm-charts
+      chart: grafana-operator
+      targetRevision: v5.16.0
+      helm:
+        releaseName: grafana-operator
+        valueFiles:
+          - $values/infra/grafana-operator/values.yaml
+
+    # Sursa 2: values din repo
+    - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+      targetRevision: master
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
