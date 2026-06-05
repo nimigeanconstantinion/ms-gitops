@@ -1,0 +1,83 @@
+# kube-prometheus-stack - values pentru clusterul ctin (server2)
+#
+# Stack complet observability:
+# - Prometheus (collect metrics)
+# - Alertmanager (alerts)
+# - kube-state-metrics (K8s resources metrics)
+# - prometheus-node-exporter (node metrics)
+# - ServiceMonitor + PodMonitor CRDs
+#
+# Grafana dezactivată — gestionată separat prin Grafana Operator
+
+# ===== PROMETHEUS =====
+prometheus:
+  prometheusSpec:
+    replicas: 1
+    retention: 7d
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+    # Auto-discovery ServiceMonitors din TOATE namespaces
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 10Gi
+
+# ===== GRAFANA =====
+# DEZACTIVAT: Grafana se gestionează separat prin Grafana Operator
+grafana:
+  enabled: false
+
+# ===== ALERTMANAGER =====
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi
+
+# ===== NODE EXPORTER =====
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 30Mi
+    limits:
+      cpu: 200m
+      memory: 50Mi
+
+# ===== KUBE-STATE-METRICS =====
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# ===== CRDs =====
+crds:
+  enabled: true
