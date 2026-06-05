@@ -1,0 +1,169 @@
+<mxfile host="app.diagrams.net" modified="2026-06-05T12:00:00.000Z" agent="claude" version="22.0.0">
+  <diagram name="Architecture" id="arch-template">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="&lt;b&gt;Platform — Production Architecture (TEMPLATE)&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="900" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Browser&lt;br&gt;(Internet)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="110" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="public-access" value="&lt;b&gt;Public Access&lt;/b&gt;&lt;br&gt;(alege provider DDNS sau tunnel)&lt;br&gt;&lt;br&gt;DuckDNS / No-IP / Cloudflare /&lt;br&gt;Route53 / ngrok / static IP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170" y="140" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-br-cf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="browser" target="public-access">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cluster" value="&lt;b&gt;K3s cluster — &amp;lt;cluster-name&amp;gt; (&amp;lt;cluster-ip&amp;gt;)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="1250" height="980" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nginx" value="&lt;b&gt;nginx-ingress&lt;/b&gt;&lt;br&gt;(ns: ingress-nginx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="460" y="160" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-cf-nginx" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="public-access" target="nginx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="hosts" value="&lt;b&gt;Ingress hosts:&lt;/b&gt;&lt;br&gt;- kibana.&amp;lt;domeniu&amp;gt;&lt;br&gt;- grafana.&amp;lt;domeniu&amp;gt;&lt;br&gt;- argocd.&amp;lt;domeniu&amp;gt;&lt;br&gt;- kafka-ui.&amp;lt;domeniu&amp;gt;&lt;br&gt;- auth.&amp;lt;domeniu&amp;gt;&lt;br&gt;- api.&amp;lt;domeniu&amp;gt;&lt;br&gt;- app.&amp;lt;domeniu&amp;gt;" style="text;html=1;strokeColor=#666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="120" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-logging" value="&lt;b&gt;ns: logging&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="260" width="310" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="eck-op" value="ECK Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="445" y="295" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="es" value="Elasticsearch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="590" y="295" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kibana" value="Kibana" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="445" y="355" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="logstash" value="Logstash" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="590" y="355" width="135" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-monitoring" value="&lt;b&gt;ns: monitoring&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="260" width="310" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="prom" value="Prometheus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="775" y="295" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" value="Grafana&lt;br&gt;+ Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="295" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="tempo" value="Tempo&lt;br&gt;(tracing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="775" y="355" width="135" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="alertmanager" value="Alertmanager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="355" width="135" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-messaging" value="&lt;b&gt;ns: messaging&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="260" width="280" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="strimzi" value="Strimzi Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="295" width="125" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" value="Kafka CR&lt;br&gt;(KRaft, 1 broker)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="295" width="125" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kafkaui" value="Kafka UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="355" width="125" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-istio" value="&lt;b&gt;ns: istio-system&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="260" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="istiod" value="istiod&lt;br&gt;(control plane)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="295" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kiali" value="Kiali (mesh graph)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="355" width="230" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-data" value="&lt;b&gt;ns: data&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="440" width="640" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cnpg" value="CloudNativePG&lt;br&gt;Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="445" y="475" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-cluster" value="Postgres Cluster&lt;br&gt;(postgres-keycloak)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="615" y="475" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="moco" value="MOCO Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="795" y="475" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="MySQL Cluster&lt;br&gt;(App DB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="445" y="535" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-auth" value="&lt;b&gt;ns: auth&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="440" width="565" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="kc-op" value="Keycloak Operator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="475" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kc-cr" value="Keycloak CR + RealmImport" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="520" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="auth-note" value="(secret mirror-uit din ns: data via Reflector)" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="565" width="535" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-carplatform" value="&lt;b&gt;ns: car-platform (istio-injection=enabled)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="630" width="1225" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="kong" value="&lt;b&gt;Kong Runtime&lt;/b&gt;&lt;br&gt;(gateway intern)&lt;br&gt;ingressController=false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="445" y="670" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="svc1" value="importer-service&lt;br&gt;(2/2 cu Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="635" y="670" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="svc2" value="sync-service&lt;br&gt;(2/2 cu Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="830" y="670" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="svc3" value="ui (React)&lt;br&gt;(2/2 cu Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1025" y="670" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="svc4" value="mock-source (C#)&lt;br&gt;(2/2 cu Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="670" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-note" value="PeerAuthentication STRICT (mTLS)  •  Telemetry → OTLP → Tempo  •  NetworkPolicies default-deny" style="text;html=1;align=center;verticalAlign=middle;fontStyle=2;fontSize=11;fillColor=#f5f5f5;strokeColor=#999;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="445" y="775" width="1195" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-argocd" value="&lt;b&gt;ns: argocd&lt;/b&gt;&lt;br&gt;(App of Apps)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="430" y="850" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-kubesys" value="&lt;b&gt;ns: kube-system&lt;/b&gt;&lt;br&gt;Sealed Secrets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="670" y="850" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-reflector" value="&lt;b&gt;ns: reflector&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="910" y="850" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-certmgr" value="&lt;b&gt;ns: cert-manager&lt;/b&gt;&lt;br&gt;Operator + ClusterIssuer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="850" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-cnpg-op" value="&lt;b&gt;ns: app-name&lt;/b&gt;&lt;br&gt;(microservicii business)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="850" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="&lt;b&gt;Legend:&lt;/b&gt;&lt;br&gt;🟥 Red border = operatori K8s-native (Strimzi, ECK, CNPG, Keycloak Op, Istio)&lt;br&gt;🟧 Orange = gateway / proxy (Kong, nginx, cloudflared)&lt;br&gt;🟪 Purple = observability (Prom, Grafana, Tempo)&lt;br&gt;🟦 Blue = aplicații / cluster&lt;br&gt;🟨 Yellow = data persistentă" style="text;html=1;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#999;rounded=1;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="850" width="350" height="140" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
