@@ -11,7 +11,6 @@ spec:
   project: default
 
   sources:
-    # Sursa 1: Helm chart oficial Prometheus Community
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
       targetRevision: 65.5.0
@@ -20,10 +19,16 @@ spec:
         valueFiles:
           - $values/infra/kube-prometheus-stack/values.yaml
 
-    # Sursa 2: values din repo gitops
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
       ref: values
+
+    # ⬇ Adăugare nouă: SealedSecret pentru Grafana admin
+    - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+      targetRevision: master
+      path: infra/kube-prometheus-stack/sealed-secrets
+      directory:
+        include: "grafana-admin-sealed.yaml"
 
   destination:
     server: https://kubernetes.default.svc

@@ -33,10 +33,74 @@ prometheus:
             requests:
               storage: 10Gi
 
+
 # ===== GRAFANA =====
-# DEZACTIVAT: Grafana se gestionează separat prin Grafana Operator
+# Activat — Grafana embedded din kube-prometheus-stack
 grafana:
-  enabled: false
+  enabled: true
+
+  # Admin user/pass din SealedSecret
+  admin:
+    existingSecret: grafana-admin-credentials
+    userKey: admin-user
+    passwordKey: admin-password
+
+  # Storage persistent — dashboards salvate manual, plugins, state
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: local-path
+    size: 5Gi
+
+  # Sidecar care încarcă dashboards/datasources din ConfigMaps cu label
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+      folder: /tmp/dashboards
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+      searchNamespace: ALL
+
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Ingress + TLS auto via cert-manager
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - grafana.icode.mywire.org
+    tls:
+      - hosts:
+          - grafana.icode.mywire.org
+        secretName: grafana-tls
+
+  # Service intern — acces doar prin Ingress
+  service:
+    type: ClusterIP
+
+  # Default config Grafana
+  grafana.ini:
+    server:
+      root_url: "https://grafana.icode.mywire.org"
+    auth.anonymous:
+      enabled: false
+
+  # Datasources și dashboards EMBEDDED — vin gratis cu chart-ul
+  # (nu trebuie să le configurezi manual; kube-prometheus-stack le auto-configurează)
 
 # ===== ALERTMANAGER =====
 alertmanager:
