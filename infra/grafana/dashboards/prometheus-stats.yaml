@@ -1,0 +1,19 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: prometheus-2-0-stats
+  namespace: monitoring
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+
+  # Prometheus 2.0 Stats (ID 3662) — sample ingestion, query latency, storage
+  url: https://grafana.com/api/dashboards/3662/revisions/latest/download
+
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "Prometheus"
+
+  folder: "Infrastructure"
+  resyncPeriod: 24h
