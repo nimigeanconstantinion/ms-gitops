@@ -5,12 +5,15 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  
+  
 spec:
   project: default
 
   sources:
-    # Sursa 1: Helm chart oficial Sealed Secrets
-    
+    # Sursa 1: Helm chart oficial ECK (Elastic Cloud on Kubernetes)
+
     - repoURL: https://helm.elastic.co
       chart: eck-operator
       targetRevision: 3.4.0
@@ -34,3 +37,5 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
+
