@@ -1,10 +1,3 @@
-# Ingress pentru ArgoCD UI — expune pe https://argocd.icode.mywire.org
-#
-# Specificul ArgoCD:
-# - argocd-server rulează HTTPS cu cert self-signed (default)
-# - nginx-ingress termină TLS cu cert Let's Encrypt și face HTTPS intern către argocd-server
-# - Pentru CLI argocd, va trebui flag --grpc-web (gRPC peste HTTP/1.1)
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,18 +5,11 @@ metadata:
   namespace: argocd
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-
-    # argocd-server e HTTPS self-signed
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
-
-    # gRPC support pentru UI WebSocket + (limited) CLI
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts:
-        - argocd.icode.mywire.org
+    - hosts: [argocd.icode.mywire.org]
       secretName: argocd-tls-cert
   rules:
     - host: argocd.icode.mywire.org
@@ -33,6 +19,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: argo-cd-argocd-server
+                name: argocd-server   # nu argo-cd-argocd-server
                 port:
-                  number: 443
+                  number: 80          # nu 443 — server e --insecure
