@@ -8,13 +8,11 @@ spec:
   count: 1
 
   # Referință către Elasticsearch (ECK injectează credentials + TLS automat)
-  # elasticsearchRefs:
-  #   - clusterName: eck
-  #     name: elasticsearch
-  #     namespace: logging
   elasticsearchRefs:
-  - name: elasticsearch
-    namespace: elastic-system
+    - clusterName: eck
+      name: elasticsearch
+      namespace: elastic-system
+
   # Pipeline configurat inline
   pipelines:
     - pipeline.id: main
