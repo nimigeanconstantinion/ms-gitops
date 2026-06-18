@@ -1,201 +1,156 @@
-# Code Review — ctin-gitops (2026-06-16)
+# Code Review — ctin-gitops (2026-06-18)
 
-Stare: **14 Applications** (au apărut postgres-keycloak, keycloak CR, kibana CR, elasticsearch CR, logstash CR, argocd-ingress; au plecat grafana-operator + grafana CR-uri custom — migrare la Grafana embedded în kube-prometheus-stack realizată). Bootstrap-ul e curat, dar **stack-ul nou are 4 bug-uri critice și o scurgere de credențiale în repo public**.
+**Stare**: Toate cele 4 bug-uri critice din review-ul anterior (2026-06-16) — **REZOLVATE**. Repo-ul a evoluat curat, stack-ul de bază (operatori + ingress + cert) funcționează. Rămân **2 issue-uri minore din review-ul anterior + 3 observații noi** descoperite la analiza profundă a stack-ului ELK.
 
-## 🔴 Bug-uri critice — fix înainte de orice push nou
+## ✅ Status fix-uri din review-ul anterior (2026-06-16)
 
-### C1 — Parolă plain text în repo PUBLIC
+| ID | Bug | Status | Verificare |
+|---|---|---|---|
+| **C1** | Parolă plain text în repo public (`grafana-admin-raw.yaml`) | ✅ Fix | Fișierul șters; doar `grafana-admin-sealed.yaml` rămas |
+| **C2** | Ingress ArgoCD (HTTPS vs HTTP + service greșit) | ✅ Fix | `infra/argocd-ingress/ingress.yaml`: `name: argocd-server`, port 80, service `argocd-server` |
+| **C3** | Conflict Secret + SealedSecret pe `grafana-admin-credentials` | ✅ Fix | Colateral cu C1 — doar SealedSecret rămas |
+| **C4** | Logstash → ES namespace greșit | ✅ Fix | `infra/logstash/logstash.yaml:14`: `namespace: elastic-system` (corect) |
 
-**Unde**: `infra/kube-prometheus-stack/grafana-admin-raw.yaml:9`
+**Excelent**: progres real, code-review acționat sistematic.
 
-```yaml
-stringData:
-  admin-user: admin
-  admin-password: "StrongPassword123"
-```
+## 🔬 Auto-corectare din review-ul anterior (mea culpa)
 
-Fișierul e **tracked în git** și repo-ul `nimigeanconstantinion/ms-gitops` e public. Parola e indexată pe GitHub, vizibilă oricui, și rămâne în istoric chiar dacă o ștergi acum.
+### C4 supliment — `clusterName: eck` NU trebuia scos
 
-**Cauză colaterală**: pattern-ul `.gitignore` `*-secret-raw.yaml` nu matchează `grafana-admin-raw.yaml` (lipsește `secret` din nume).
+În review-ul anterior am recomandat ștergerea câmpului `clusterName: eck` din `elasticsearchRefs`. **Greșit.**
 
-**Fix imediat**:
-```bash
-# 1. Schimbă parola Grafana — orice e în istoric e compromis
-# 2. Re-sigilează cu noua parolă (kubeseal)
-# 3. Șterge raw-ul din repo + istoric
-git rm infra/kube-prometheus-stack/grafana-admin-raw.yaml
-git filter-repo --invert-paths --path infra/kube-prometheus-stack/grafana-admin-raw.yaml
-git push --force origin master   # ATENȚIE — rescrie istoric
-```
+ECK folosește `clusterName` ca **prefix pentru env vars injectate automat** în container-ul Logstash:
+- `ECK_ES_HOSTS`, `ECK_ES_USER`, `ECK_ES_PASSWORD`, `ECK_ES_SSL_CERTIFICATE_AUTHORITY`
 
-**Prevenție**: alinează `.gitignore` cu numele real folosit:
-```
-# Local secrets (NU commit niciodată!)
-*-raw.yaml          # mai larg decât *-secret-raw.yaml
-*.key
-*.pem
-.env
-.env.local
-```
+Pipeline-ul din `logstash.yaml:42-49` referă exact aceste env vars (`${ECK_ES_HOSTS}`, etc.), deci `clusterName: eck` e **CORECT și necesar**. Fără el → variabilele nu există → pipeline crash la startup.
 
-### C2 — Ingress ArgoCD nu funcționează (HTTPS vs HTTP + service inexistent)
+**Concluzie**: ai păstrat câmpul — bună decizie, ignorându-mi sugestia greșită. Lesson learned din partea mea.
 
-**Unde**: `infra/argocd-ingress/ingress.yaml`
+## 🟡 Issue-uri rămase / noi
 
-Două probleme în același fișier:
+### M2 (din review anterior) — `argocd-ingress` Argo App fără sync-wave
 
-**Problema A — protocol mismatch**: `bootstrap/install.sh:47` pornește argocd-server cu `--set configs.params."server\.insecure"=true` → server-ul ascultă HTTP plain. Ingress-ul însă cere:
+**Unde**: `argo-apps/infra-argocd-ingress.yaml`
 
 ```yaml
-nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
-port:
-  number: 443
-```
-
-nginx face TLS handshake către un server HTTP → **502 Bad Gateway**.
-
-**Problema B — nume serviciu greșit**: ingress referă `name: argo-cd-argocd-server`. Chart-ul `argo-helm/argo-cd` are `nameOverride` default `"argocd"` (nu `Chart.Name`). Cu release `argocd` → fullname = `argocd` → service = **`argocd-server`** (confirmat de `install.sh:49` care urmărește `deployment argocd-server`).
-
-**Fix**:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
 metadata:
-  name: argocd-server
+  name: argocd-ingress
   namespace: argocd
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts: [argocd.icode.mywire.org]
-      secretName: argocd-tls-cert
-  rules:
-    - host: argocd.icode.mywire.org
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: argocd-server   # nu argo-cd-argocd-server
-                port:
-                  number: 80          # nu 443 — server e --insecure
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  # ⚠️ lipsește anotare sync-wave
 ```
 
-**Verificare**:
-```bash
-kubectl -n argocd get svc | grep server
-# argocd-server   ClusterIP   ...   80/TCP,443/TCP
+Per convenția documentată în `apps/README.md`, Ingress-urile sunt **wave `4`** (după operatori + CR-uri + servicii). Fără anotare → default wave `0` → încearcă să creeze Ingress înainte de cert-manager → poate eșua silent la prima reconciliere.
 
-kubectl -n argocd get cm argocd-cmd-params-cm -o yaml | grep insecure
-# server.insecure: "true"
-
-curl -I https://argocd.icode.mywire.org/      # după sync
-```
-
-### C3 — Conflict Secret + SealedSecret pe `grafana-admin-credentials`
-
-**Unde**: `infra/kube-prometheus-stack/grafana-admin-raw.yaml` și `infra/kube-prometheus-stack/sealed-secrets/grafana-admin-sealed.yaml`
-
-Ambele fișiere creează un Secret cu același nume `grafana-admin-credentials` în namespace `monitoring`. ArgoCD aplică ambele:
-- Secret-ul raw scrie direct cheile
-- SealedSecret e decriptat de controller și suprascrie
-
-Rezultat: **drift permanent OutOfSync + race condition** între ArgoCD reconcile și sealed-secrets controller. Fix-ul C1 (ștergere raw) rezolvă și acest bug.
-
-### C4 — Logstash trimite la Elasticsearch în namespace inexistent
-
-**Unde**: `infra/logstash/logstash.yaml:11-14`
-
-```yaml
-elasticsearchRefs:
-  - clusterName: eck
-    name: elasticsearch
-    namespace: logging     # ← greșit
-```
-
-Dar `Elasticsearch` rulează în `elastic-system` (vezi `infra/elasticsearch/elasticsearch.yaml:5` + `argo-apps/infra-elasticsearch.yaml:20`). Logstash va rămâne în `Pending`/`CrashLoopBackOff` cu eroare „Elasticsearch resource not found".
-
-**Plus**: câmpul `clusterName: eck` e pentru `RemoteCluster` setup (multi-cluster ES), nu pentru ref local — scoate-l.
-
-**Fix**:
-```yaml
-elasticsearchRefs:
-  - name: elasticsearch
-    namespace: elastic-system
-```
-
-**Decizie colaterală** — `argo-apps/infra-logstash.yaml:20` îl pune în namespace `logging`, dar `apps/README.md:110` zice convenția: ELK stă în `elastic-system`. Două opțiuni:
-- (a) Mută Logstash în `elastic-system` (consistent cu convenția documentată)
-- (b) Lasă-l în `logging` ca namespace dedicat ingestion, dar atunci actualizează tabelul din `apps/README.md`
-
-## 🟡 Issue-uri minore
-
-### M1 — `argo-apps/README.md` desincronizat
-
-Tabelul listează 12 Applications, lipsesc: `argocd-ingress`, `kibana`, `keycloak`, `logstash`, `postgres-keycloak`. Apar încă `grafana-operator` și `grafana` deși au fost șterse în migrarea Grafana embedded. Mențiunea „Grafana dezactivat" e falsă acum (e activă embedded în kube-prometheus-stack).
-
-Regenerează tabelul din `ls argo-apps/infra-*.yaml`.
-
-### M2 — `argocd-ingress` fără sync-wave
-
-`argo-apps/infra-argocd-ingress.yaml` nu are anotare. Per regulile din `apps/README.md:97`, Ingress-urile sunt wave `4`. Pentru consistență:
-
+**Fix** (1 linie):
 ```yaml
 metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "4"
 ```
 
-### M3 — Keycloak fără Ingress
+### M3 (din review anterior) — Keycloak fără Ingress
 
-`infra/keycloak/keycloak.yaml:22-24` declară `hostname: https://auth.icode.mywire.org` cu `strict: true`. Fără Ingress rutat la service-ul Keycloak, hostname-ul nu rezolvă din afară → utilizatorul vede ERR_CONNECTION_REFUSED, iar cu `strict: true` Keycloak refuză request-uri pe alt hostname.
-
-Adaugă `infra/keycloak/ingress.yaml` (urmează pattern-ul Kibana — backend HTTP plain, cert-manager pentru TLS):
-
+`infra/keycloak/keycloak.yaml:23` declară:
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: keycloak
-  namespace: auth
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts: [auth.icode.mywire.org]
-      secretName: keycloak-tls-cert
-  rules:
-    - host: auth.icode.mywire.org
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: keycloak-service     # verifică: kubectl -n auth get svc
-                port:
-                  number: 8080
+hostname:
+  hostname: https://auth.icode.mywire.org
+  strict: true
 ```
 
-### M4 — `GETTING_STARTED.md` referă fișiere ce nu există
+Cu `strict: true`, Keycloak **refuză orice request pe alt hostname** decât `auth.icode.mywire.org`. Fără Ingress → hostname-ul nu rezolvă din afară → utilizatorul vede `ERR_CONNECTION_REFUSED`.
 
-Pasul 7 din `GETTING_STARTED.md` prezintă ClusterIssuer ca „creează manual" — dar e deja în repo (`infra/cert-manager-issuers/clusterissuer.yaml`). Probabil rămas din starter.
+**Fix**: vezi review-ul anterior § M3 pentru template Ingress complet.
 
-## 🟢 Pattern-uri corecte (continuă așa)
+### N1 (NOU) — Namespace inconsistent în stack-ul logging 🟡
 
-- ✅ **Migrare Grafana operator → embedded** — clean: 5 fișiere șterse, values consolidat, datasource auto-detect, ~20 dashboards default
-- ✅ **Cross-namespace secret cu Reflector + CNPG `inheritedMetadata`** — `postgres-keycloak` propagă annotations Reflector pe Secret-ul `*-app` generat, mirror în `auth` automat. Pattern profesional.
-- ✅ **Convenție namespace pe funcție** (`auth`, `data`, `messaging`, `monitoring`) — nu pe tehnologie
-- ✅ **Security context riguros** pe Elasticsearch + Kibana + Logstash (`runAsNonRoot`, `drop: [ALL]`, `selfSignedCertificate`)
-- ✅ **Kibana ingress corect configurat** (`backend-protocol: HTTPS` + `proxy-ssl-verify: off` + port 5601) — match cu ECK self-signed
-- ✅ **Logstash pipeline custom** cu input TCP json_lines + filter mutate + output ES via env vars ECK_*  (ECK injectează automat credentials + CA)
-- ✅ **CNPG cu `inheritedMetadata.annotations`** — soluție corectă pentru Reflector pe Secret-uri gestionate de operator (nu poți edita direct Secret-ul)
+**Drift între componente ale aceluiași stack funcțional:**
+
+| Componentă | Namespace actual | Schema cere |
+|---|---|---|
+| ECK Operator | `elastic-system` | `logging` |
+| Elasticsearch | `elastic-system` | `logging` |
+| Kibana | `elastic-system` | `logging` |
+| **Logstash** | **`logging`** | `logging` |
+
+Logstash e singura componentă în `logging`. Restul în `elastic-system` (default-ul Helm chart-ului ECK).
+
+**Consecințe practice:**
+1. **Logstash → ES service lookup cross-namespace** — funcționează doar pentru că ai setat explicit `elasticsearchRefs.namespace: elastic-system`. Sensibil la regresii.
+2. **NetworkPolicies imposibile coerent** — dacă vrei isolation pe namespace, Logstash nu poate vorbi cu ES fără policy specifică cross-namespace.
+3. **Schema arhitecturală vs realitate diferite** — vezi N2.
+
+**Fix recomandat** (alege una):
+
+**Opțiunea A — Aliniere cu schema (mută TOT în `logging`)**:
+1. `argo-apps/infra-eck.yaml:35` → `namespace: logging`
+2. `infra/elasticsearch/elasticsearch.yaml:5` + `argo-apps/infra-elasticsearch.yaml:20` → `namespace: logging`
+3. `infra/kibana/kibana.yaml:5` + `infra/kibana/ingress.yaml:13` + `argo-apps/infra-kibana.yaml:20` → `namespace: logging`
+4. `infra/logstash/logstash.yaml` `elasticsearchRefs.namespace` → `logging`
+
+ArgoCD cu `prune: true` va prune resursele din `elastic-system` și recreea în `logging`. Curățenie după: `kubectl delete ns elastic-system`.
+
+**Opțiunea B — Actualizează schema să zică `elastic-system`**:
+Edit `docs/architecture.drawio` → label `ns: logging` în box-ul ECK → `ns: elastic-system`. Mai ușor, dar diluează convenția "namespace pe funcție" pe care o folosești corect pentru `auth`, `data`, `messaging`, `monitoring`.
+
+**Recomandare**: Opțiunea A — consistență cu pattern-ul „namespace = funcție business" pe care îl ai pe restul stack-ului.
+
+### N2 (NOU) — Schema vs implementare divergente 🟡
+
+`docs/architecture.drawio` zice clar:
+```
+ns: logging
+  ├─ Elasticsearch
+  ├─ Kibana
+  └─ Logstash
+```
+
+Implementarea actuală (vezi N1) NU respectă propria-i schemă pentru 3 din 4 componente.
+
+**Risk pedagogic**: dacă altcineva clonează repo-ul ca template, schema îl va induce în eroare.
+
+### N3 (NOU) — Lipsește log shipper (Filebeat sau echivalent) 🟡
+
+**Pipeline-ul Logstash așteaptă input TCP pe portul 5044** cu `codec => json_lines`. Asta implică o singură abordare practică:
+
+**Aplicațiile trimit log-uri direct la Logstash** prin `LogstashTcpSocketAppender` (Logback/Java) sau echivalente.
+
+**Anti-pattern în K8s native** ([12-factor app, factor XI](https://12factor.net/logs)):
+- Aplicația trebuie să **nu știe** de infrastructura de logging
+- Aplicația scrie pe stdout, infrastructura colectează
+- Cuplaj cod ↔ infra = greu de schimbat stack-ul logging fără modificat aplicațiile
+
+**Lipsește componenta de "collection automată"** din pod-uri:
+
+| Opțiune | Pros | Cons |
+|---|---|---|
+| **Filebeat** (Beat CR) DaemonSet | gestionat de ECK Operator, integrare nativă, k8s autodiscover cu metadata | Doar logs (nu metrici) |
+| **Fluent-bit** | Lightweight, CNCF, flexibil | Manual setup ConfigMap |
+| **Vector** | Rapid, Rust | Mai puține integrări native ELK |
+
+**Recomandare**: adaugă `infra/filebeat/filebeat.yaml` (CR `Beat`, type filebeat, DaemonSet, autodiscover Kubernetes, output spre Logstash:5044 sau direct ES).
+
+Variantă mai modernă (skip Logstash dacă nu ai nevoie de transformări complexe): **Filebeat direct la ES + Ingest Pipelines** (procesare ES-side, JSON declarative). Pipeline-ul Logstash actual face doar:
+- `remove_field => ["@version", "host", "port"]`
+- `add_field => { "timestamp" => "%{@timestamp}" }`
+
+Asta poate fi acoperit 100% de un Ingest Pipeline ES nativ. **Logstash devine opțional pentru caz K8s pur**.
+
+## 🟢 Pattern-uri excelente (continuă așa)
+
+- ✅ **Toate fix-urile din review-ul anterior aplicate sistematic** — disciplina code-review respectată
+- ✅ **`clusterName: eck` păstrat** (în ciuda recomandării mele greșite) — corect, prefix pt env vars ECK injectate
+- ✅ **`.gitignore` aliniat cu pattern real** — `*-secret-raw.yaml` funcționează, plus `*.key`, `*.pem`, `.env`
+- ✅ **Migrare Grafana operator → embedded** consolidată
+- ✅ **CNPG cu `inheritedMetadata.annotations`** pentru Reflector pe Secret-uri operator-managed — pattern profesional
+- ✅ **Cross-namespace secret cu Reflector + CNPG `inheritedMetadata`** pentru postgres-keycloak → auth
+- ✅ **Convenție namespace pe funcție** (`auth`, `data`, `messaging`, `monitoring`) — bună pentru tot **exceptând** logging (vezi N1)
+- ✅ **Security context riguros** pe ES + Kibana + Logstash (`runAsNonRoot`, `runAsUser: 1000`, `drop: [ALL]`, `allowPrivilegeEscalation: false`)
+- ✅ **Kibana ingress** cu `backend-protocol: HTTPS` + `proxy-ssl-verify: off` + port 5601 — match cu ECK self-signed
+- ✅ **Logstash pipeline custom** cu input TCP json_lines + filter mutate + output ES via env vars ECK_* — sintaxă corectă chiar dacă anti-pattern arhitectural
 - ✅ **Keycloak `proxy: headers: xforwarded`** — corect pentru deployment în spatele nginx-ingress
+- ✅ **`server.publicBaseUrl` pe Kibana** + `xpack.banners.placement` + `telemetry.optIn: false` — UX details corecte
 
 ## 📋 Layer status
 
@@ -203,25 +158,29 @@ Pasul 7 din `GETTING_STARTED.md` prezintă ClusterIssuer ca „creează manual" 
 |---|---|---|
 | Operatori | 8/8 instalate | sealed-secrets, nginx-ingress, cert-manager, eck, strimzi, cnpg, keycloak-op, reflector |
 | Cluster-scoped CR | 1/1 | ClusterIssuer Let's Encrypt prod |
-| CR-uri namespaced | 5/6 | elasticsearch ✅, postgres-keycloak ✅, kibana ✅, keycloak ✅, logstash 🔴(C4), kafka ❌ |
-| SealedSecrets | 1/3 | grafana-admin ✅ (cu C1+C3), keycloak-realm ❌, kafka SCRAM ❌ |
-| Ingress | 2/4 | argocd 🔴(C2), kibana ✅, grafana ✅ (via chart), keycloak ❌(M3) |
+| CR-uri namespaced | 5/6 | elasticsearch ✅, postgres-keycloak ✅, kibana ✅, keycloak ✅, logstash ✅, kafka ❌ |
+| SealedSecrets | 1/3 | grafana-admin ✅, keycloak-realm ❌, kafka SCRAM ❌ |
+| Ingress | 3/4 | argocd ✅, kibana ✅, grafana ✅ (embedded), keycloak ❌(M3) |
+| **Logging completeness** | **partial** | ES ✅ + Kibana ✅ + Logstash ✅, dar **lipsește shipper Filebeat/Fluent-bit (N3)** → fără el, Kibana nu primește log-uri din pod-uri automat |
 
 ## 🎯 Sinteză & priorități
 
 | Categorie | Stare |
 |---|---|
-| Bug-uri critice | 4 (C1 securitate, C2 ingress argocd, C3 conflict secret, C4 logstash namespace) |
-| Issue-uri minore | 4 (README desync, sync-wave, ingress keycloak, GS stale) |
-| Documentație sync | ~40% (CODE_REVIEW e cel actualizat; argo-apps/README + apps/README în urmă) |
+| Bug-uri critice **noi** | 0 (toate fixate) |
+| Issue-uri minore rămase din 2026-06-16 | 2 (M2 sync-wave, M3 keycloak ingress) |
+| Issue-uri noi descoperite | 3 (N1 namespace split, N2 schema desync, N3 lipsește shipper) |
+| Self-corrections review anterior | 1 (C4 clusterName: eck — păstrat corect) |
 
-**Risk #1**: parola Grafana e expusă public în git history → orice e indexat pe GitHub e considerat compromis. **Schimbă parola înainte de orice altă acțiune**.
+**Quick wins (ordinea recomandată)**:
 
-**Quick wins (ordine logică)**:
+1. **M2** — Adaugă `sync-wave: "4"` în `argo-apps/infra-argocd-ingress.yaml` (1 linie, <1 min)
+2. **M3** — Adaugă `infra/keycloak/ingress.yaml` (template în review-ul anterior) → `auth.icode.mywire.org` live
+3. **N3** — Adaugă Filebeat DaemonSet → log-uri reale în Kibana (până atunci, Kibana e gol)
+4. **N1+N2** — Mută ES + Kibana + ECK Operator în `logging` (aliniere cu schema). Atenție: pierderi de date dacă PVC-ul rămâne în `elastic-system` — verifică reclaim policy înainte (`local-path` are `Delete`).
 
-1. **C1** — rotează parola Grafana + șterge raw + `filter-repo` (~15 min)
-2. **C2** — fix ingress ArgoCD (1 fișier, 3 linii) → UI accesibil
-3. **C4** — fix namespace Logstash (1 linie) → ELK end-to-end funcțional
-4. **M3** — adaugă ingress Keycloak → `auth.icode.mywire.org` live
+**Decizie strategică** (cere discuție):
+- Păstrezi Logstash + adaugi Filebeat (pipeline `app → stdout → Filebeat → Logstash → ES`)?
+- Sau migrezi la **Filebeat direct la ES + Ingest Pipelines** (drop Logstash)? — mai simplu, sufficient pentru K8s logs, ești în plus rid de TCP listener exposed.
 
-După alea: SealedSecret pentru Keycloak admin + KeycloakRealmImport, apoi Kafka CR cu KRaft.
+**Pașii recomandați după**: SealedSecret pentru Keycloak admin + KeycloakRealmImport declarativ, apoi Kafka CR cu KRaft + KafkaTopic-uri per microserviciu.
