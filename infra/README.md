@@ -17,8 +17,10 @@ Fiecare sub-folder corespunde unei `Application` din `argo-apps/infra-<nume>.yam
 | `sealed-secrets/` | `sealed-secrets` | Helm values | `kube-system` |
 | `cert-manager/` | `cert-manager` | Helm values | `cert-manager` |
 | `cert-manager-issuers/` | `cert-manager-issuers` | raw manifests (ClusterIssuer) | `cert-manager` |
-| `eck-operator/` | `eck-operator` | Helm values | `elastic-system` |
-| `elasticsearch/` | `elasticsearch` | raw manifests (CR) | `elastic-system` |
+| `eck-operator/` | `eck-operator` | Helm values | `logging` |
+| `elasticsearch/` | `elasticsearch` | raw manifests (CR) | `logging` |
+| `kibana/` | `kibana` | raw manifests (CR + Ingress) | `logging` |
+| `filebeat/` | `filebeat` | raw manifests (Beat Filebeat + RBAC) | `logging` |
 | `kube-prometheus-stack/` | `kube-prometheus-stack` | Helm values | `monitoring` |
 | `grafana-operator/` | `grafana-operator` | Helm values | `monitoring` |
 | `strimzi/` | `strimzi` | Helm values | `messaging` |

@@ -10,7 +10,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kibana
-  namespace: elastic-system
+  namespace: logging
   annotations:
     # cert-manager: obține automat cert pentru kibana.icode.mywire.org
     cert-manager.io/cluster-issuer: letsencrypt-prod

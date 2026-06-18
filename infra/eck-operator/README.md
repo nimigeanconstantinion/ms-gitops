@@ -6,26 +6,20 @@ Elastic Cloud on Kubernetes — operator pentru CR-uri Elasticsearch / Kibana / 
 |---|---|
 | Application | `argo-apps/infra-eck.yaml` |
 | Chart | `elastic/eck-operator` v3.4.0 |
-| Namespace | `elastic-system` |
-
-## ⚠️ Bug-uri curente (vezi CODE_REVIEW.md)
-
-- Lipsă `ServerSideApply=true` în syncOptions → risc "request entity too large" la apply CRD-uri mari
-- Lipsă `sync-wave: "0"` explicit (e implicit 0, dar inconsistent cu pattern-ul tău)
-- Comentariu greșit la linia 12 ("Sealed Secrets" în loc de "ECK")
+| Namespace | `logging` |
 
 ## CRD-uri principale
 
-- `Elasticsearch` (deja folosit — vezi `infra/elasticsearch/`)
-- `Kibana` ⬅ NEXT — vizualizare logs/metrics
-- `Logstash` — pipeline ingest
-- `Beats` — collectors (Filebeat, Metricbeat)
-- `ApmServer` — APM tracking
+- `Elasticsearch` (vezi `infra/elasticsearch/`)
+- `Kibana` (vezi `infra/kibana/`)
+- `Beat` — Filebeat DaemonSet (vezi `infra/filebeat/`)
+- `Logstash` — pipeline ingest (nefolosit — log-urile merg direct la ES via Filebeat)
+- `ApmServer` — APM tracking (nefolosit)
 
 ## Verify
 
 ```bash
-kubectl -n elastic-system get pods
+kubectl -n logging get pods
 kubectl get crd | grep elastic.co
 ```
 
@@ -38,21 +32,11 @@ Operator pod: `elastic-operator-0`.
 - `replicaCount: 1` (HA pentru prod = 3)
 - `manageNamespace: false` dacă vrei să gestionezi ns separat
 
-## Next CR de adăugat
+## Stack curent
 
-**Kibana** (vezi catalog `argo-apps/README.md` → layer CR-uri):
-```yaml
-# infra/kibana/kibana.yaml
-apiVersion: kibana.k8s.elastic.co/v1
-kind: Kibana
-metadata:
-  name: kibana
-  namespace: elastic-system
-spec:
-  version: 8.15.3   # = versiunea Elasticsearch
-  count: 1
-  elasticsearchRef:
-    name: elasticsearch
-```
+- `eck-operator` (wave 0) → `logging`
+- `elasticsearch` (wave 2) → `logging`
+- `kibana` (wave 3) + Ingress → `logging`
+- `filebeat` Beat CR (wave 3) → `logging`
 
-Plus Application separat `argo-apps/infra-kibana.yaml` wave 3.
+Toate CR-urile referă ES/Kibana cu `namespace: logging` explicit (vezi `infra/filebeat/filebeat.yaml`).

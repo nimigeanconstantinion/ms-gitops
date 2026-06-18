@@ -2,22 +2,26 @@
 
 Folder scanat de `bootstrap/root.yaml` cu `recurse: false`. Fiecare fișier `infra-*.yaml` devine un `Application` ArgoCD automat după push.
 
-## Catalog (13 Applications)
+## Catalog Applications
 
 | Wave | Application | Namespace | Sursă | Scop |
 |---|---|---|---|---|
-| 0 (implicit) | `sealed-secrets` | `kube-system` | Helm `bitnami-labs/sealed-secrets` 2.16.2 | Decriptează SealedSecret-uri din git → Secret-uri normale |
-| 0 (implicit) | `nginx-ingress` | `ingress-nginx` | Helm `kubernetes/ingress-nginx` 4.11.3 | Controller Ingress; expune servicii HTTP/HTTPS |
-| 0 (implicit) | `cert-manager` | `cert-manager` | Helm `jetstack/cert-manager` v1.16.2 | Operator + CRD ClusterIssuer/Certificate |
-| 0 (implicit) | `eck-operator` | `elastic-system` | Helm `elastic/eck-operator` 3.4.0 | Operator pentru CR-uri Elasticsearch/Kibana/Logstash |
-| 0 explicit | `strimzi` | `messaging` | Helm `strimzi/strimzi-kafka-operator` 0.47.0 | Operator Kafka |
-| 0 explicit | `cloudnative-pg` | `data` | Helm `cloudnative-pg/cloudnative-pg` 0.22.1 | Operator Postgres (CR `Cluster`) |
-| 0 explicit | `keycloak-operator` | `auth` | raw manifests din `keycloak/keycloak-k8s-resources` 26.1.4 | Operator + CR-uri Keycloak/Realm |
-| 0 explicit | `reflector` | `reflector` | Helm `emberstack/reflector` 9.1.21 | Replică Secret/ConfigMap cross-namespace |
-| 1 explicit | `cert-manager-issuers` | `cert-manager` | path repo `infra/cert-manager-issuers` | `ClusterIssuer` Let's Encrypt prod (HTTP01) |
-| 1 explicit | `kube-prometheus-stack` | `monitoring` | Helm `prometheus-community/kube-prometheus-stack` 65.5.0 | Prometheus + Alertmanager + node/state metrics (Grafana dezactivat) |
-| 1 explicit | `grafana-operator` | `monitoring` | OCI `ghcr.io/grafana/helm-charts/grafana-operator` v5.16.0 | Operator + CR-uri Grafana/Dashboard/Datasource |
-| 2 explicit | `elasticsearch` | `elastic-system` | path repo `infra/elasticsearch` | CR `Elasticsearch` (1 nod, 10Gi storage) |
+| 0 | `sealed-secrets` | `kube-system` | Helm `bitnami-labs/sealed-secrets` 2.16.2 | Decriptează SealedSecret-uri din git → Secret-uri normale |
+| 0 | `nginx-ingress` | `ingress-nginx` | Helm `kubernetes/ingress-nginx` 4.11.3 | Controller Ingress; expune servicii HTTP/HTTPS |
+| 0 | `cert-manager` | `cert-manager` | Helm `jetstack/cert-manager` v1.16.2 | Operator + CRD ClusterIssuer/Certificate |
+| 0 | `eck-operator` | `logging` | Helm `elastic/eck-operator` 3.4.0 | Operator pentru CR-uri Elasticsearch/Kibana/Beat |
+| 0 | `strimzi` | `messaging` | Helm `strimzi/strimzi-kafka-operator` 0.47.0 | Operator Kafka |
+| 0 | `cloudnative-pg` | `data` | Helm `cloudnative-pg/cloudnative-pg` 0.22.1 | Operator Postgres (CR `Cluster`) |
+| 0 | `keycloak-operator` | `auth` | raw manifests din `keycloak/keycloak-k8s-resources` 26.1.4 | Operator + CR-uri Keycloak/Realm |
+| 0 | `reflector` | `reflector` | Helm `emberstack/reflector` 9.1.21 | Replică Secret/ConfigMap cross-namespace |
+| 1 | `cert-manager-issuers` | `cert-manager` | path repo `infra/cert-manager-issuers` | `ClusterIssuer` Let's Encrypt prod (HTTP01) |
+| 1 | `kube-prometheus-stack` | `monitoring` | Helm `prometheus-community/kube-prometheus-stack` 65.5.0 | Prometheus + Alertmanager + Grafana embedded |
+| 2 | `postgres-keycloak` | `data` | path repo `infra/postgres-keycloak` | CR `Cluster` CNPG pentru Keycloak |
+| 2 | `elasticsearch` | `logging` | path repo `infra/elasticsearch` | CR `Elasticsearch` (1 nod, 10Gi storage) |
+| 3 | `kibana` | `logging` | path repo `infra/kibana` | CR `Kibana` + Ingress |
+| 3 | `keycloak` | `auth` | path repo `infra/keycloak` | CR `Keycloak` + Ingress |
+| 3 | `filebeat` | `logging` | path repo `infra/filebeat` | CR `Beat` (DaemonSet) — colectează log-uri pod-uri → ES |
+| 4 | `argocd-ingress` | `argocd` | path repo `infra/argocd-ingress` | Ingress UI ArgoCD |
 
 ## Regula sync-wave
 

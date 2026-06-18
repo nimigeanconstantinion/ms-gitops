@@ -65,4 +65,4 @@ spec:
               service:
                 name: keycloak-service
                 port:
-                  number: 844
+                  number: 8443

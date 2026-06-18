@@ -5,11 +5,13 @@ metadata:
   namespace: logging
 spec:
   type: filebeat
-  version: 8.18.7
+  version: 8.15.3
   elasticsearchRef:
     name: elasticsearch
+    namespace: logging
   kibanaRef:
     name: kibana
+    namespace: logging
   config:
     filebeat.autodiscover:
       providers:

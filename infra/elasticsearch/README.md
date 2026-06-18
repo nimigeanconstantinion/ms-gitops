@@ -7,7 +7,7 @@ CR `Elasticsearch` — single-node cluster pentru logs/metrics.
 | Application | `argo-apps/infra-elasticsearch.yaml` |
 | Tip | raw manifests (single-source path) |
 | Wave | 2 (după eck-operator wave 0) |
-| Namespace | `elastic-system` |
+| Namespace | `logging` |
 | Versiune | 8.15.3 |
 
 ## Config curent
@@ -22,8 +22,8 @@ CR `Elasticsearch` — single-node cluster pentru logs/metrics.
 ## Verify
 
 ```bash
-kubectl -n elastic-system get elasticsearch
-kubectl -n elastic-system get pods -l elasticsearch.k8s.elastic.co/cluster-name=elasticsearch
+kubectl -n logging get elasticsearch
+kubectl -n logging get pods -l elasticsearch.k8s.elastic.co/cluster-name=elasticsearch
 ```
 
 Status: `HEALTH=green` + `PHASE=Ready` în ~2 min.
@@ -32,11 +32,11 @@ Status: `HEALTH=green` + `PHASE=Ready` în ~2 min.
 
 ```bash
 # Parola user elastic
-kubectl -n elastic-system get secret elasticsearch-es-elastic-user \
+kubectl -n logging get secret elasticsearch-es-elastic-user \
   -o jsonpath='{.data.elastic}' | base64 -d
 
 # Port-forward pentru testare
-kubectl -n elastic-system port-forward svc/elasticsearch-es-http 9200:9200
+kubectl -n logging port-forward svc/elasticsearch-es-http 9200:9200
 
 # Test
 curl -k -u "elastic:<parola>" https://localhost:9200/_cluster/health
@@ -50,11 +50,8 @@ curl -k -u "elastic:<parola>" https://localhost:9200/_cluster/health
 
 ## Lipsuri actuale
 
-- ❌ Kibana CR (vizualizare) — vezi `eck-operator/README.md`
-- ❌ Logstash (pipeline custom)
-- ❌ Filebeat DaemonSet (collect logs from pods)
 - ❌ ServiceMonitor pentru Prometheus
-- ❌ Ingress public
+- ❌ Ingress public (acces ES doar prin port-forward)
 
 ## Backup
 

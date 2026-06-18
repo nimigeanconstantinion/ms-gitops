@@ -26,7 +26,8 @@ resources:
 # - stackconfigpolicy.k8s.elastic.co
 installCRDs: true
 
-# Manage namespaces pentru CR-uri (ES, Kibana, Logstash vor fi în elastic-system)
+# Watch toate namespace-urile pentru CR-uri ECK (ES, Kibana, Beat în `logging`)
+# Empty list = cluster-wide watch (default)
 managedNamespaces: []
 
 # Webhook pentru validare CRDs

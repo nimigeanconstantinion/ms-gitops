@@ -92,7 +92,7 @@ ArgoCD aplică Applications în ordinea `argocd.argoproj.io/sync-wave` (numere m
 | 2 | `postgres-keycloak` | CR (CNPG Cluster) | `cloudnative-pg` |
 | 2 | `grafana` | CR (Grafana + dashboards) | `grafana-operator` |
 | 3 | `kibana` | CR (Kibana) | `elasticsearch` ready |
-| 3 | `logstash` | CR (Logstash) | `elasticsearch` ready |
+| 3 | `filebeat` | CR (Beat) | `elasticsearch` ready |
 | 3 | `keycloak` | CR (Keycloak) | `postgres-keycloak` ready |
 | 4 | `argocd-ingress` | Ingress | nginx-ingress + cert-manager-issuers |
 | 4 | `cloudflared` | Tunnel (opțional) | DNS + Ingress ready |
@@ -107,7 +107,7 @@ Resursele sunt grupate logic pe namespace (vezi diagrama de arhitectură). Conve
 | `ingress-nginx` | NGINX Ingress Controller | Operator + Service LoadBalancer |
 | `cert-manager` | cert-manager + ClusterIssuer-uri | Operator + CR cluster-scoped |
 | `reflector` | Reflector controller | Operator |
-| `elastic-system` | ECK operator + Elasticsearch + Kibana + Logstash | Operator + CR-uri (logging stack) |
+| `logging` | ECK operator + Elasticsearch + Kibana + Filebeat | Operator + CR-uri (logging stack) |
 | `monitoring` | kube-prometheus-stack + grafana-operator + Grafana CR + dashboards | Operator + CR-uri (observability) |
 | `messaging` | Strimzi operator + Kafka CR-uri | Operator + CR-uri |
 | `data` | CloudNativePG operator + Cluster-e Postgres | Operator + CR-uri (DB) |
