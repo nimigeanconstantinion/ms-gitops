@@ -25,6 +25,9 @@ spec:
     processors:
       - add_cloud_metadata: {}
       - add_host_metadata: {}
+    setup.template.overwrite: true
+    setup.template.settings:
+      index.auto_expand_replicas: "0-1"
   daemonSet:
     podTemplate:
       spec:
