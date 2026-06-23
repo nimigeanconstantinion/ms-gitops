@@ -1,0 +1,44 @@
+# Postgres dedicat pentru Keycloak (CNPG), in ns `data`.
+#
+# IMPORTANT (lectie invatata): clusterul NU se numeste `keycloak-db`, ca sa nu genereze
+# automat un Secret `keycloak-db-app` care s-ar bate cu SealedSecret-ul nostru cu
+# acelasi nume (conflict de ownership: "already exists and is not managed by SealedSecret").
+# Numele `keycloak-pg` => CNPG genereaza `keycloak-pg-app` (pe care il ignoram).
+#
+# Parola rolului `keycloak` o controlam noi prin `managed.roles`, care CITESTE
+# (nu detine) Secret-ul sealed `keycloak-db-app`. Acel Secret e si oglindit de Reflector
+# in ns `keycloak` pentru Keycloak. Zero conflict intre CNPG si sealed-secrets.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-pg
+  namespace: data
+spec:
+  instances: 1
+
+  storage:
+    size: 5Gi
+    storageClass: local-path
+
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+
+  # Seteaza/reconciliaza parola rolului `keycloak` din Secret-ul nostru (basic-auth).
+  managed:
+    roles:
+      - name: keycloak
+        ensure: present
+        login: true
+        inherit: true
+        connectionLimit: -1
+        passwordSecret:
+          name: keycloak-db-app
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
