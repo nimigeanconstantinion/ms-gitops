@@ -30,6 +30,9 @@ spec:
     hostname: https://auth.icode.mywire.org
     strict: true
 
+  ingress:
+    enabled: false
+
   # HTTP intern — TLS terminat de Cloudflare extern + nginx HTTP intern
   http:
     httpEnabled: true
