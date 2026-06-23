@@ -8,7 +8,7 @@ Stack complet observability: Prometheus + Alertmanager + kube-state-metrics + no
 | Chart | `prometheus-community/kube-prometheus-stack` 65.5.0 |
 | Namespace | `monitoring` |
 | Wave | 1 |
-| Grafana inclusă | ❌ DEZACTIVATĂ (gestionată separat prin grafana-operator) |
+| Grafana inclusă | ✅ EMBEDDED (Ingress: grafana.icode.mywire.org, admin via SealedSecret) |
 
 ## Componente livrate
 
@@ -18,6 +18,7 @@ Stack complet observability: Prometheus + Alertmanager + kube-state-metrics + no
 | Alertmanager | Routing alerts (1Gi storage) |
 | kube-state-metrics | Metrici K8s resources |
 | prometheus-node-exporter | Metrici noduri (CPU/mem/disk/network) |
+| Grafana | UI dashboards, embedded — ingress https://grafana.icode.mywire.org |
 | CRDs | ServiceMonitor, PodMonitor, PrometheusRule, AlertmanagerConfig |
 
 ## Verify
@@ -83,4 +84,4 @@ Fără ele, ArgoCD ar rămâne permanent `OutOfSync` pe drift cosmetic.
 
 ## Dashboard-uri Grafana
 
-Sunt gestionate prin **grafana-operator** (separat) — vezi `infra/grafana-operator/README.md`. Dashboards comunitate (ID-uri de pe grafana.com): 315 (K8s cluster), 1860 (node exporter), 12114 (K8s deployment).
+ Adaugă ConfigMap cu label `grafana_dashboard: "1"` în orice namespace → sidecar-ul Grafana îl încarcă automat. Dashboards comunitate utile (import via UI Grafana, ID de pe grafana.com): 315 (K8s cluster), 1860 (node exporter), 12114 (K8s deployment).

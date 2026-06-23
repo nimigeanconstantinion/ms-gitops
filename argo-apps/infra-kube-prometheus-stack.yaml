@@ -28,7 +28,7 @@ spec:
       targetRevision: master
       path: infra/kube-prometheus-stack/sealed-secrets
       directory:
-        include: "grafana-admin-sealed.yaml"
+        include: "*.yaml"
 
   destination:
     server: https://kubernetes.default.svc

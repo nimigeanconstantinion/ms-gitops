@@ -14,6 +14,7 @@ prometheus:
   prometheusSpec:
     replicas: 1
     retention: 7d
+    retentionSize: "8GiB"
     resources:
       requests:
         cpu: 200m
@@ -59,7 +60,7 @@ grafana:
       label: grafana_dashboard
       labelValue: "1"
       searchNamespace: ALL
-      folder: /tmp/dashboards
+      folder: /var/lib/grafana/dashboards
     datasources:
       enabled: true
       label: grafana_datasource
@@ -106,6 +107,11 @@ grafana:
 alertmanager:
   alertmanagerSpec:
     replicas: 1
+    alertmanagerConfigSelector:
+      matchLabels:
+        alertmanagerConfig: default
+    alertmanagerConfigMatcherStrategy:
+      type: None    
     resources:
       requests:
         cpu: 50m

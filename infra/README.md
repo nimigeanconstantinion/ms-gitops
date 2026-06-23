@@ -22,7 +22,6 @@ Fiecare sub-folder corespunde unei `Application` din `argo-apps/infra-<nume>.yam
 | `kibana/` | `kibana` | raw manifests (CR + Ingress) | `logging` |
 | `filebeat/` | `filebeat` | raw manifests (Beat Filebeat + RBAC) | `logging` |
 | `kube-prometheus-stack/` | `kube-prometheus-stack` | Helm values | `monitoring` |
-| `grafana-operator/` | `grafana-operator` | Helm values | `monitoring` |
 | `strimzi/` | `strimzi` | Helm values | `messaging` |
 | `cloudnative-pg/` | `cloudnative-pg` | Helm values | `data` |
 | `reflector/` | `reflector` | Helm values | `reflector` |
