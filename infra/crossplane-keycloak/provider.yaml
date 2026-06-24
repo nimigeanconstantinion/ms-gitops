@@ -1,0 +1,10 @@
+# Instaleaza provider-keycloak in Crossplane. Aduce CRD-urile Realm/Client/Role etc.
+# sync-wave 1: dupa ce Crossplane core a inregistrat CRD-ul Provider.
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/provider-keycloak:v2.20.0

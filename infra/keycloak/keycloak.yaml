@@ -13,6 +13,8 @@ spec:
       value: "true"
     - name: health-enabled
       value: "true"
+  ingress:
+    enabled: false    
   # Postgres extern (CNPG în ns `data`, secret mirror-uit aici prin Reflector)
   db:
     vendor: postgres
@@ -29,9 +31,6 @@ spec:
   hostname:
     hostname: https://auth.icode.mywire.org
     strict: true
-
-  ingress:
-    enabled: false
 
   # HTTP intern — TLS terminat de Cloudflare extern + nginx HTTP intern
   http:

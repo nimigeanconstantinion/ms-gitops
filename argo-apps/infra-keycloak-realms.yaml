@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak-realms
+  namespace: argocd
+  annotations:
+    # wave 4: dupa Keycloak (wave 3) + provider-keycloak/ProviderConfig (wave 1).
+    # Aici stau CR-urile Crossplane care chiar se conecteaza la Keycloak.
+    argocd.argoproj.io/sync-wave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+    targetRevision: master
+    path: apps
+    # recurse: prinde apps/<app>/keycloak/*.yaml pentru toate aplicatiile.
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    # CR-urile Crossplane (Realm/Client/Role) sunt cluster-scoped; namespace-ul e ignorat.
+    namespace: crossplane-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      # CRD-urile Realm/Client/Role apar abia dupa ce provider-keycloak se instaleaza.
+      - SkipDryRunOnMissingResource=true

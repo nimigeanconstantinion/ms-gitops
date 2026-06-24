@@ -1,0 +1,9 @@
+# Crossplane 2.x (cu EnableBetaDeploymentRuntimeConfigs) cere un DeploymentRuntimeConfig
+# numit `default` ca sa construiasca Deployment-ul runtime al oricarui provider.
+# Fara el: provider-ul ramane "waiting for package runtime controller" / nu porneste.
+# Spec gol = comportament default (resurse implicite pentru pod-ul provider-ului).
+apiVersion: pkg.crossplane.io/v1beta1
+kind: DeploymentRuntimeConfig
+metadata:
+  name: default
+spec: {}

@@ -1,0 +1,9 @@
+# Crossplane core (control plane pentru providers).
+# Provider-ul efectiv (provider-keycloak) e instalat declarativ ca resursa Provider,
+# vezi infra/crossplane-keycloak/provider.yaml.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi

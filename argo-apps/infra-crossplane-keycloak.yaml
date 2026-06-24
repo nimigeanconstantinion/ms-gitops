@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-keycloak
+  namespace: argocd
+  annotations:
+    # wave 1: dupa Crossplane core (wave 0). DOAR Provider-ul (instaleaza provider-keycloak
+    # + CRD-urile). ProviderConfig e in app separat crossplane-keycloak-config (wave 2),
+    # ca sa nu pice sync-ul cand CRD-ul ProviderConfig inca nu exista.
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+    targetRevision: master
+    path: infra/crossplane-keycloak
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      # ProviderConfig (keycloak.crossplane.io) isi capata CRD-ul abia dupa ce
+      # Provider-ul instaleaza provider-keycloak. Fara asta, ArgoCD pica validarea
+      # ("synchronization tasks are not valid") si nu aplica nimic.
+      - SkipDryRunOnMissingResource=true

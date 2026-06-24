@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-keycloak-config
+  namespace: argocd
+  annotations:
+    # wave 2: DUPA ce app-ul crossplane-keycloak (wave 1) a instalat provider-keycloak
+    # si CRD-ul ProviderConfig exista. App separat = sync curat (CRD-ul e deja prezent).
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+    targetRevision: master
+    path: infra/crossplane-keycloak-config
+    directory:
+      recurse: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
