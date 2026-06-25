@@ -14,7 +14,7 @@ spec:
     # Sursa 1: Helm chart oficial Strimzi Kafka Operator
     - repoURL: https://strimzi.io/charts/
       chart: strimzi-kafka-operator
-      targetRevision: 0.47.0
+      targetRevision: 1.0.1
       helm:
         releaseName: strimzi
         valueFiles:
