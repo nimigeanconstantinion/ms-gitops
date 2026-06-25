@@ -11,7 +11,6 @@ spec:
   project: default
 
   sources:
-    # Sursa 1: Helm chart oficial Strimzi Kafka Operator
     - repoURL: https://strimzi.io/charts/
       chart: strimzi-kafka-operator
       targetRevision: 1.0.1
@@ -20,7 +19,6 @@ spec:
         valueFiles:
           - $values/infra/strimzi/values.yaml
 
-    # Sursa 2: values din repo gitops
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
       ref: values
