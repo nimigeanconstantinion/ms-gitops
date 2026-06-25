@@ -1,0 +1,236 @@
+<mxfile host="app.diagrams.net" modified="2026-06-25T12:00:00.000Z" agent="claude" version="22.0.0">
+  <diagram name="Architecture-Final" id="arch-final-ctin">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1480" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="&lt;b&gt;constantin-gitops — Arhitectur&amp;#259; &amp;#539;int&amp;#259; (ce trebuie s&amp;#259; fie la final)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;font-weight:normal&quot;&gt;App of Apps (ArgoCD). &lt;b&gt;Linie continu&amp;#259;&lt;/b&gt; = livrat &amp;#537;i sincronizat. &lt;b&gt;Linie punctat&amp;#259;&lt;/b&gt; = prezent dar nef&amp;#259;cut / de ad&amp;#259;ugat. Wave tag = argocd.argoproj.io/sync-wave.&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="380" y="12" width="1040" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Browser&lt;br&gt;(Internet)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="175" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cf-dns" value="&lt;b&gt;Dynu DDNS&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:11px&quot;&gt;*.icode.mywire.org&lt;/span&gt;&lt;br&gt;A record &amp;rarr; IP public server&lt;br&gt;&lt;span style=&quot;font-size:10px;font-style:italic&quot;&gt;DDNS update (IP dinamic)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170" y="95" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ec2-eip" value="&lt;b&gt;Server (IP public)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Router/Firewall: 80, 443, 6443, 22&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-style:italic&quot;&gt;K3s ServiceLB maps 80/443&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170" y="200" width="230" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-br-cf" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;" edge="1" parent="1" source="browser" target="cf-dns"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge-cf-ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;endArrow=classic;" edge="1" parent="1" source="cf-dns" target="ec2-eip"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="cluster" value="&lt;b&gt;K3s cluster — icode.mywire.org&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="430" y="90" width="1250" height="930" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nginx" value="&lt;b&gt;nginx-ingress&lt;/b&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;&lt;br&gt;(ns: ingress-nginx)&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;LoadBalancer :80/:443&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="460" y="160" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-ec2-nginx" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;" edge="1" parent="1" source="ec2-eip" target="nginx"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="hosts" value="&lt;b&gt;Ingress hosts (TLS via cert-manager):&lt;/b&gt;&lt;br&gt;✅ argocd / auth / grafana / kibana .icode.mywire.org&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#b85450&quot;&gt;⚠ kafka-ui pe domeniu gre&amp;#537;it (aws.mycodepractice.com)&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-style:italic&quot;&gt;🟡 neexpuse: prometheus, alertmanager (+ BasicAuth)&lt;/span&gt;" style="text;html=1;strokeColor=#666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="690" y="148" width="320" height="105" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-logging" value="&lt;b&gt;ns: logging&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(ECK — 4 Applications separate)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="280" width="330" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="eck-op" value="ECK Operator &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="465" y="315" width="145" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="es" value="Elasticsearch &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W2&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="620" y="315" width="145" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="kibana" value="Kibana &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W3&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="465" y="360" width="145" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="filebeat" value="Filebeat (DaemonSet) &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W3&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="620" y="360" width="145" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="log-note" value="logs din toate pod-urile &amp;rarr; ES &amp;rarr; Kibana (ingress HTTPS)" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="465" y="405" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-monitoring" value="&lt;b&gt;ns: monitoring&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(kube-prometheus-stack)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="280" width="330" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="prom" value="Prometheus &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="812" y="315" width="148" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" value="Grafana (embedded) &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="315" width="148" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="alertmanager" value="Alertmanager &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="812" y="360" width="148" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="exporters" value="node-exporter + kube-state &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="360" width="148" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="mon-note" value="Grafana DS auto + dashboards • grafana.icode.mywire.org" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="812" y="405" width="306" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-messaging" value="&lt;b&gt;ns: messaging&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(Strimzi)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="280" width="290" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="strimzi" value="Strimzi Operator &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1162" y="315" width="130" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" value="Kafka CR (KRaft) &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W2&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1302" y="315" width="125" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="topics" value="Topics &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W2&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:9px&quot;&gt;orders • events • notifications&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1162" y="360" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kafkaui" value="Kafka UI &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W3&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:9px;color:#b85450&quot;&gt;⚠ host domeniu gre&amp;#537;it&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1302" y="360" width="125" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-data" value="&lt;b&gt;ns: data&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(CNPG + MOCO + MongoDB)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="475" width="680" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="cnpg-op" value="CloudNativePG Op &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="465" y="510" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="moco-op" value="MOCO Op (MySQL) &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="675" y="510" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mongo-op" value="MongoDB Community Op &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="885" y="510" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-keycloak" value="PG Cluster &lt;b&gt;postgres-keycloak&lt;/b&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W2&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="465" y="563" width="220" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="db-orphan" value="&lt;b&gt;infra/databases/&lt;/b&gt; — mysql, mongodb, postgres&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#b85450&quot;&gt;CR-uri prezente dar F&amp;#258;R&amp;#258; Application (orphan) — de wired&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf6e3;strokeColor=#d6b656;dashed=1;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="563" width="415" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="data-note" value="SealedSecret keycloak-db oglindit data &amp;rarr; auth via &lt;b&gt;Reflector&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="465" y="620" width="430" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-keycloak" value="&lt;b&gt;ns: auth&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(Keycloak Operator)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="475" width="520" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="kc-op" value="Keycloak Operator &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="510" width="490" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="kc-cr" value="Keycloak CR + Ingress auth.* &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W3&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="553" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kc-realm" value="RealmImport &lt;b&gt;demo&lt;/b&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W4&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1415" y="553" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-kc-db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#b85450;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="kc-op" target="pg-keycloak">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-crossplane" value="&lt;b&gt;ns: crossplane-system&lt;/b&gt; &lt;span style=&quot;font-size:10px;font-weight:normal&quot;&gt;(realms declarativi)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;strokeWidth=2;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="695" width="680" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-core" value="Crossplane core &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#0e8088;" vertex="1" parent="1">
+          <mxGeometry x="465" y="730" width="155" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-provider" value="provider-keycloak &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#0e8088;" vertex="1" parent="1">
+          <mxGeometry x="630" y="730" width="155" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-config" value="ProviderConfig &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W2&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#0e8088;" vertex="1" parent="1">
+          <mxGeometry x="795" y="730" width="150" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-realm" value="Realm/Clients/Roles &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W4&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:9px;color:#b85450&quot;&gt;apps/ gol — de populat&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fbfb;strokeColor=#0e8088;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="955" y="730" width="160" height="44" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-system" value="&lt;b&gt;System / bootstrap namespaces&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef3fb;strokeColor=#6c8ebf;strokeWidth=1;verticalAlign=top;fontStyle=1;fontSize=12;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="630" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-argocd" value="&lt;b&gt;ns: argocd&lt;/b&gt;&lt;br&gt;root App of Apps&lt;br&gt;+ argocd-ingress &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W4&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="665" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-kubesys" value="&lt;b&gt;ns: kube-system&lt;/b&gt;&lt;br&gt;Sealed Secrets &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1335" y="665" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-reflector" value="&lt;b&gt;ns: reflector&lt;/b&gt;&lt;br&gt;controller &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1505" y="665" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-certmgr" value="&lt;b&gt;ns: cert-manager&lt;/b&gt; — Operator &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W0&lt;/span&gt; + ClusterIssuer letsencrypt-prod &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W1&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="730" width="490" height="48" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-carplatform" value="&lt;b&gt;ns: business&lt;/b&gt; &lt;span style=&quot;font-size:11px;font-weight:normal&quot;&gt;(istio-injection=enabled)&lt;/span&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;viitor&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="810" width="870" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="kong" value="&lt;b&gt;Kong / Gateway intern&lt;/b&gt;&lt;br&gt;ingressController=false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8f0;strokeColor=#d79b00;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="465" y="850" width="170" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="svc1" value="microserviciu A&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="650" y="850" width="155" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="svc2" value="microserviciu B&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="850" width="155" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="svc3" value="UI&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="990" y="850" width="155" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="cp-note" value="P6 (opțional, dup&amp;#259; platform&amp;#259;): Istio mTLS STRICT • Telemetry → OTLP → Tempo • NetworkPolicies default-deny" style="text;html=1;align=center;verticalAlign=middle;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="465" y="942" width="815" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ns-istio" value="&lt;b&gt;ns: istio-system&lt;/b&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;viitor&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf3f3;strokeColor=#b85450;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="810" width="330" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="istio-base" value="istio-base (CRDs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="845" width="300" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="istiod" value="istiod (control plane)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="885" width="300" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="kiali" value="Kiali + Tempo (tracing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="925" width="300" height="32" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="&lt;b&gt;Legend:&lt;/b&gt;&lt;br&gt;🟥 Red = operatori K8s-native (ECK, Keycloak Op, Istio)&lt;br&gt;🟧 Orange = gateway / edge (nginx, Kong, Dynu, server)&lt;br&gt;🟪 Purple = observability (Prometheus, Grafana)&lt;br&gt;🟩 Green = messaging (Strimzi, Kafka)&lt;br&gt;🟨 Yellow = data persistent&amp;#259; (CNPG, MOCO, Mongo)&lt;br&gt;🟦 Blue = cluster / system / business&lt;br&gt;🟦 Teal = Crossplane (control-plane declarativ)&lt;br&gt;&lt;b&gt;Linie continu&amp;#259;&lt;/b&gt; = sincronizat • &lt;b&gt;linie punctat&amp;#259;&lt;/b&gt; = orphan / de f&amp;#259;cut&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;Wave &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W&amp;lt;n&amp;gt;&lt;/span&gt; = argocd.argoproj.io/sync-wave.&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#999;rounded=1;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1045" width="490" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="status-panel" value="&lt;b&gt;Status — ce mai e de f&amp;#259;cut&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f7f0;strokeColor=#82b366;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="550" y="1045" width="1130" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="st-done" value="&lt;b&gt;✅ Livrat&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Bootstrap • Observability (Grafana live)&lt;br&gt;Logging (4 apps) • Messaging&lt;br&gt;Keycloak + realm demo + postgres-keycloak&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="565" y="1080" width="360" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="st-partial" value="&lt;b&gt;🟡 De completat&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;• Wire infra/databases (mysql, mongo) — orphan&lt;br&gt;• Populeaz&amp;#259; apps/ (Crossplane realms)&lt;br&gt;• Fix host kafka-ui → .icode.mywire.org&lt;br&gt;• Ingress prometheus/alertmanager (+ BasicAuth)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="1080" width="380" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="st-todo" value="&lt;b&gt;⬜ Viitor (opțional)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Layer business: Istio (mTLS) + Tempo&lt;br&gt;+ Kong + microservicii&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1335" y="1080" width="330" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gitops-panel" value="&lt;b&gt;GitOps Reconcile Flow&lt;/b&gt; — App of Apps pattern (bootstrap/root.yaml)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f0ff;strokeColor=#6c8ebf;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1280" width="1640" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-1" value="&lt;b&gt;1.&lt;/b&gt; Laptop:&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;git push&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1310" width="280" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-2" value="&lt;b&gt;2.&lt;/b&gt; GitHub repo (PUBLIC)&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;argo-apps/, infra/, apps/&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1310" width="280" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-3" value="&lt;b&gt;3.&lt;/b&gt; argocd-repo-server&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;polling ~3 min (sau hard refresh)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="1310" width="300" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-4" value="&lt;b&gt;4.&lt;/b&gt; root scaneaz&amp;#259; argo-apps/&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;(recurse:false → 24 Applications)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1310" width="320" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-5" value="&lt;b&gt;5.&lt;/b&gt; sync per wave (W0 → W4)&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;prune:true • selfHeal:true&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1310" width="340" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="gitops-e1" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="gitops-1" target="gitops-2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="gitops-e2" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="gitops-2" target="gitops-3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="gitops-e3" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="gitops-3" target="gitops-4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="gitops-e4" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="gitops-4" target="gitops-5"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
