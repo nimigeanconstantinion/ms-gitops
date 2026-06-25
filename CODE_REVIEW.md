@@ -1,176 +1,219 @@
-# Code Review — Keycloak & Elasticsearch
+# Code Review — full repo audit
 
-Review pe `infra/keycloak/` și `infra/elasticsearch/` (+ kibana, filebeat) la commit `46c5c93`.
-Nimic nu a fost modificat — doar diagnostic + fix propus.
+Review complet la commit `449b330`. Nimic nu a fost modificat — doar diagnostic + fix propus.
+Acoperă: bootstrap, sync-waves, secrete, baze de date, Crossplane, logging (ELK), Kafka, monitoring, ingress.
+
+## Rezolvate din review-ul precedent (scoase)
+
+| Problemă veche | Status |
+|---|---|
+| Keycloak — Ingress duplicat | ✅ `spec.ingress.enabled: false` aplicat (`keycloak.yaml:16`) |
+| Keycloak — ServiceMonitor `scheme: HTTP` | ✅ `scheme: http` aplicat (`servicemonitor.yaml:15`) |
+
+## Sumar probleme curente
 
 | # | Componentă | Severitate | Status |
 |---|---|---|---|
-| 1 | Keycloak — Ingress duplicat | 🔴 Blocker (sync fail) | Root cause confirmat |
-| 2 | Keycloak — ServiceMonitor scheme | 🔴 Blocker (sync fail) | Root cause confirmat |
-| 3 | Elasticsearch | 🟡 Synced + stuck `Progressing` | Config diff + pași diagnostic |
-| 4 | Filebeat — hostPath containerd | 🟠 Observație | Posibil „0 logs” pe K3s |
-| 5 | Gap analysis vs referință | 🟢 Parity | Ce trebuie adăugat (Pas 5/5) |
+| A | Secrete `*-raw.yaml` commise în git (parole în clar) | 🔴 Blocker security | Confirmat |
+| B | `infra/databases/` orfan — niciun App nu-l sincronizează | 🔴 Blocker funcțional | Confirmat |
+| C | Crossplane-keycloak nefuncțional — de aliniat la starter | 🟡 Arhitectură | Decizie: păstrăm Crossplane |
+| D | `kafka-ui` host copy-paste greșit din referință | 🟠 Sync/cert fail | Confirmat |
+| E | Elasticsearch + Kibana `securityContext` custom | 🟡 Posibil `Progressing` | Neschimbat |
+| F | Filebeat hostPath `/var/lib/docker/containers` pe K3s | 🟠 Posibil „0 logs” | Neschimbat |
+| G | Observații minore (waves, whitespace, idle operators) | 🟢 Polish | Listă |
 
 ---
 
-## Pas 1/4 — Keycloak: Ingress duplicat 🔴
+## A 🔴 — Parole în clar în git history
 
-**Eroare**
-```
-admission webhook "validate.nginx.ingress.kubernetes.io" denied the request:
-host "auth.icode.mywire.org" and path "/" is already defined in ingress auth/keycloak-ingress
-```
+**Diagnostic** — `.gitignore` are pattern-ul `*-secret-raw.yaml`, dar fișierele raw se numesc `*-raw.yaml` → nu se potrivesc și sunt tracked.
 
-**Diagnostic**
-Operatorul Keycloak creează automat un Ingress propriu numit `keycloak-ingress` (derivat din `spec.hostname`). Tu mai ai și un Ingress manual numit `keycloak`. Două obiecte Ingress cu același `host + path /` în namespace-ul `auth` → nginx admission webhook respinge al doilea.
+**Dovada** — `git ls-files | grep raw`
 
-**Dovada**
-
-| Sursă | Ce produce |
+| Fișier | Conținut expus |
 |---|---|
-| `infra/keycloak/keycloak.yaml:29-31` (`spec.hostname`) | Operator generează `keycloak-ingress` |
-| `infra/keycloak/keycloak.yaml:49-75` (Ingress manual) | `keycloak`, același host + `/` |
+| `infra/databases/secrets/keycloak-db-raw.yaml` | `password: "StrongPassword123!"` |
+| `infra/databases/secrets/mongodb-demo-raw.yaml` | `password: mongopassword` |
+| `infra/crossplane-keycloak-config/secrets/keycloak-credentials-raw.yaml` | `credentials: keycloak` (placeholder) |
 
+**Fix propus** (NU aplicat)
+```gitignore
+*-raw.yaml
+```
 ```bash
-kubectl -n auth get ingress
-# vei vedea AMBELE: keycloak  ȘI  keycloak-ingress  pe auth.icode.mywire.org
+git rm --cached infra/databases/secrets/keycloak-db-raw.yaml \
+                infra/databases/secrets/mongodb-demo-raw.yaml \
+                infra/crossplane-keycloak-config/secrets/keycloak-credentials-raw.yaml
 ```
-
-**Fix propus** (NU aplicat) — dezactivează ingress-ul operatorului, păstrează-l pe al tău (al tău are annotations cert-manager + backend HTTPS pe care le vrei):
-
-```yaml
-# infra/keycloak/keycloak.yaml, în spec:
-  ingress:
-    enabled: false
-```
-
-> Alternativă: ștergi Ingress-ul manual și configurezi `spec.ingress` din CR-ul Keycloak. Nu recomand — pierzi annotations cert-manager / backend-protocol HTTPS / proxy-buffer-size.
+Parolele sunt deja în history → rotește-le + re-seal după `git rm`.
 
 ---
 
-## Pas 2/4 — Keycloak: ServiceMonitor scheme 🔴
+## B 🔴 — `infra/databases/` orfan: operatori instalați degeaba
 
-**Eroare**
-```
-ServiceMonitor.monitoring.coreos.com "keycloak" is invalid:
-spec.endpoints[0].scheme: Unsupported value: "HTTP": supported values: "http", "https"
-```
+**Diagnostic** — `grep -rln "infra/databases" argo-apps/` → **niciun** Application. Folderul `infra/databases/` (4 CR-uri + secrete) nu e sincronizat de nimic.
 
-**Diagnostic**
-CRD-ul ServiceMonitor validează `scheme` ca enum lowercase. `HTTP` nu e acceptat.
+**Consecințe**
 
-**Dovada** — `infra/keycloak/servicemonitor.yaml:15`
+| Resursă în `infra/databases/` | Operator instalat | Efect |
+|---|---|---|
+| `mysql.yaml` (`MySQLCluster`) | MOCO (wave 1) | Operator idle — CR-ul nu se aplică niciodată |
+| `mongodb.yaml` (`MongoDBCommunity`) | mongodb-operator (wave 0) | Operator idle — CR-ul nu se aplică |
+| `postgres-cluster.yaml` (`Cluster` demo) | CNPG (wave 0) | Cluster `demo` neimplementat |
+| `keycloak-db-cluster.yaml` (`Cluster` `keycloak-pg`) | CNPG | **Duplicat** — vezi mai jos |
+| `secrets/*-sealed.yaml` | sealed-secrets | SealedSecret-urile nu se aplică |
+
+**Duplicat Keycloak Postgres** — există DOUĂ definiții de Postgres pentru Keycloak:
+
+| Definiție | Cluster | Secret | Sincronizat? |
+|---|---|---|---|
+| `infra/postgres-keycloak/cluster.yaml` | `postgres-keycloak` (auto-secret `postgres-keycloak-app`, mirror Reflector → `auth`) | auto-generat CNPG | ✅ App `postgres-keycloak` (wave 2) |
+| `infra/databases/keycloak-db-cluster.yaml` | `keycloak-pg` (`managed.roles` + sealed `keycloak-db-app`) | sealed | ❌ orfan |
+
+Keycloak CR pointează pe `postgres-keycloak-rw.data.svc` cu secret `postgres-keycloak-app` (`keycloak.yaml:20,24-29`) → folosește definiția sincronizată. Deci `keycloak-db-cluster.yaml` e cod mort de pe o abordare anterioară.
+
+**Fix propus** (NU aplicat) — alege:
+- **Dacă NU ai nevoie de MySQL/Mongo/Postgres-demo acum** (apps/ e gol): șterge `infra/databases/` întreg + dezinstalează operatorii idle (`moco`, `mongodb-operator`) ca să nu consume RAM degeaba.
+- **Dacă ai nevoie**: creează `argo-apps/infra-databases.yaml` (wave 2, `recurse: true`, ns `data`) care sincronizează `infra/databases/`, ȘI șterge `keycloak-db-cluster.yaml` (duplicat cu `postgres-keycloak`).
+
+> Pe un singur nod server2 (RAM limitat) operatorii idle + clustere nefolosite = presiune RAM inutilă care poate explica `Pending`/`Progressing` la ES (vezi E).
+
+---
+
+## C 🟡 — Crossplane-keycloak: de aliniat la starter
+
+**Decizie:** păstrăm Crossplane ca mecanism de realm (reconciliere continuă + drift detection). Trebuie aliniat la starterul `car-platform-sync-gitops`, unde stack-ul ajunge `Synced`.
+
+**De ce e mort acum**
+
+| Cauză | CTIN | Referință (Synced) |
+|---|---|---|
+| Credențiale placeholder | `keycloak-credentials` = `credentials: keycloak` | JSON `admin-cli` complet |
+| Zero CR-uri de reconciliat | `keycloak-realms` App → `path: apps`, dar `apps/` are doar `README.md` | `apps/<app>/keycloak/realm.yaml` (CR `Realm`) |
+| Mecanism dublu | `KeycloakRealmImport` în `infra/keycloak/realm-demo.yaml` | doar Crossplane |
+
+**Fix propus** (NU aplicat) — 3 pași spre paritate:
+
+**1. Credențiale reale** în `infra/crossplane-keycloak-config/secrets/keycloak-credentials-raw.yaml` (apoi `kubeseal` + șterge raw):
 ```yaml
-      scheme: HTTP    # ← trebuie lowercase
+stringData:
+  credentials: |
+    {
+      "client_id": "admin-cli",
+      "username": "<din secret keycloak-initial-admin>",
+      "password": "<din secret keycloak-initial-admin>",
+      "url": "http://keycloak-service.auth.svc:8080",
+      "base_path": "",
+      "realm": "master"
+    }
 ```
+```bash
+kubectl -n auth get secret keycloak-initial-admin -o jsonpath='{.data.username}' | base64 -d
+kubectl -n auth get secret keycloak-initial-admin -o jsonpath='{.data.password}' | base64 -d
+kubeseal --controller-namespace kube-system --controller-name sealed-secrets-controller \
+  --format yaml < infra/crossplane-keycloak-config/secrets/keycloak-credentials-raw.yaml \
+  > infra/crossplane-keycloak-config/secrets/keycloak-credentials-sealed.yaml
+```
+> `url` = service-ul INTERN Keycloak (ns `auth`, port HTTP 8080 — `httpEnabled: true` deja setat). NU domeniul public.
+
+**2. Realm CR Crossplane** în `apps/<app>/keycloak/realm.yaml`:
+```yaml
+apiVersion: realm.keycloak.crossplane.io/v1alpha1
+kind: Realm
+metadata:
+  name: demo
+spec:
+  forProvider:
+    realm: demo
+    enabled: true
+    displayName: "Demo Realm"
+  providerConfigRef:
+    name: keycloak-provider-config
+```
+
+**3. Șterge mecanismul dublu** — `infra/keycloak/realm-demo.yaml` (`KeycloakRealmImport`).
+
+---
+
+## D 🟠 — kafka-ui host străin de platformă
+
+**Diagnostic** — `infra/kafka-ui/values.yaml:29` are host copiat verbatim din referință:
+```yaml
+  host: kafka-ui.aws.mycodepractice.com
+```
+Tot restul platformei e pe `icode.mywire.org` (server2/dynu):
+
+| Componentă | Host |
+|---|---|
+| keycloak | `auth.icode.mywire.org` |
+| kibana | `kibana.icode.mywire.org` |
+| grafana | `grafana.icode.mywire.org` |
+| argocd | `argocd.icode.mywire.org` |
+| **kafka-ui** | **`kafka-ui.aws.mycodepractice.com`** ← greșit |
+
+`aws.mycodepractice.com` e domeniul home/AWS → DNS nu rezolvă spre server2 → cert-manager nu emite cert, ingress inutil.
 
 **Fix propus** (NU aplicat)
 ```yaml
-      scheme: http
+  host: kafka-ui.icode.mywire.org
 ```
+> CR-ul Kafka în sine e OK — `version: 4.2.0` + `kafka.strimzi.io/v1` (cluster + topics) sunt identice cu referința, compatibile Strimzi 0.47.
 
 ---
 
-## Pas 3/4 — Elasticsearch 🟡 (Synced + stuck `Progressing`)
+## E 🟡 — Elasticsearch + Kibana: securityContext custom
 
-**Simptom ArgoCD:** `elasticsearch` (ns `logging`) → STATUS `Synced`, HEALTH `Progressing` (serverside-applied). CR-ul a fost aplicat, dar ECK nu-l duce la `Ready/green` → podul nu devine Ready.
+**Diagnostic** — ambele containere suprascriu `securityContext` cu `runAsNonRoot` + `capabilities.drop: [ALL]`:
+- `infra/elasticsearch/elasticsearch.yaml:33-38`
+- `infra/kibana/kibana.yaml` (același bloc)
 
-Manifestul `infra/elasticsearch/elasticsearch.yaml` e OK pe gotcha-urile uzuale ECK:
-- ✅ `requests.memory == limits.memory` (2Gi) — evită OOMKill din rescheduling
-- ✅ heap = 50% din container (`-Xms1g -Xmx1g` la 2Gi)
-- ✅ `node.store.allow_mmap: false` — nu cere `vm.max_map_count` pe K3s
+Referința care ajunge `green` lasă ECK să-l gestioneze singur. Dacă podul ES e blocat `Progressing`/`CrashLoop`, ăsta e primul suspect (după RAM — vezi B).
 
-**Config diff vs referința care ajunge `green`** (`car-platform-sync-gitops/infra/eck-stack/elasticsearch.yaml`):
-
-| Câmp | Referință (green) | CTIN (Progressing) | Risc |
-|---|---|---|---|
-| `version` | `8.18.7` | `8.15.3` | mic |
-| `node.roles` | absent (default = toate) | listă explicită (`ml`, `transform`...) | mic |
-| `securityContext` container | **absent** (ECK îl pune singur) | `runAsNonRoot` + `capabilities: drop: [ALL]` | 🟠 prim suspect — poate bloca bootstrap |
-| `http.tls.selfSignedCertificate` | absent | `disabled: false` | mic |
-
-Referința lasă ECK să-și gestioneze securityContext-ul. CTIN îl suprascrie cu `drop: [ALL]` + `runAsNonRoot` pe containerul `elasticsearch` (`infra/elasticsearch/elasticsearch.yaml:33-39`) — cel mai probabil motiv pentru un pod care nu ajunge `Ready`.
-
-Ca să confirm root cause am nevoie de starea reală a podului. Rulează pe server2:
-
+**Verificare pe server2**
 ```bash
 kubectl -n logging get elasticsearch
-kubectl -n logging get pods -l elasticsearch.k8s.elastic.co/cluster-name=elasticsearch
-kubectl -n logging describe elasticsearch elasticsearch | tail -40
 kubectl -n logging logs elasticsearch-es-default-0 --tail=80
-kubectl -n logging get events --sort-by=.lastTimestamp | tail -30
+kubectl -n logging describe elasticsearch elasticsearch | tail -40
+kubectl get sc   # storageClassName: local-path există?
 ```
 
-**Suspecți probabili pe server2** (de confirmat cu output-ul de mai sus):
-
-| Simptom | Cauză tipică | Verificare |
+| Simptom | Cauză | Acțiune |
 |---|---|---|
-| Pod `Pending` | RAM insuficientă (ES 2Gi + Kibana 1Gi + Keycloak 1Gi pe un singur nod) → **config OK, infra problem** | `kubectl describe pod ... \| grep -A3 Events` |
-| PVC `Pending` | `storageClassName: local-path` lipsă / alt nume pe server2 | `kubectl get sc` |
-| `CrashLoopBackOff` / `Error` la boot | securityContext `drop: [ALL]` blochează init/bootstrap | `kubectl logs ...` |
-| OOMKilled | heap > RAM disponibil | `kubectl logs ...` → `OutOfMemoryError` |
-
-> Dacă podul e `Pending` → e RAM/PVC (nu configul). Dacă e `CrashLoop`/`Error` la pornire → scoate securityContext-ul custom și lasă ECK-ul default (ca în referință).
+| `Pending` | RAM insuficient (ES 2Gi + Kibana 1Gi + Keycloak 1Gi + operatori idle) | curăță B → eliberează RAM |
+| `CrashLoop`/`Error` la boot | securityContext `drop: [ALL]` blochează bootstrap | scoate securityContext-ul custom |
+| PVC `Pending` | `local-path` lipsă/alt nume | `kubectl get sc` |
 
 ---
 
-## Pas 4/4 — Filebeat: hostPath pe K3s 🟠 (observație, nu blochează sync)
+## F 🟠 — Filebeat hostPath pe K3s/containerd
 
-`infra/filebeat/filebeat.yaml` montează `/var/lib/docker/containers`. K3s folosește **containerd**, nu Docker — calea aia nu există, deci montarea e goală. Log collection merge prin symlink-urile din `/var/log/containers` + `/var/log/pods` (deja montate), dar pe unele setup-uri symlink-urile trimit spre `/var/lib/rancher/k3s/agent/containerd/...` care NU e montat → Filebeat citește symlink rupt = „0 logs”.
+**Diagnostic** — `infra/filebeat/filebeat.yaml` montează `/var/lib/docker/containers`. K3s folosește containerd, nu Docker → mount gol. Colectarea merge prin `/var/log/containers` + `/var/log/pods` (montate), dar pe unele setup-uri symlink-urile trimit spre `/var/lib/rancher/k3s/agent/containerd/...` care NU e montat → symlink rupt = „0 logs”.
 
-**De verificat după ce ES e green:**
+**De verificat după ce ES e green**
 ```bash
-kubectl -n logging logs -l beat.k8s.elastic.co/name=filebeat --tail=50 | grep -i "harvester\|error\|permission"
+kubectl -n logging logs -l beat.k8s.elastic.co/name=filebeat --tail=50 | grep -i "harvester\|error\|permission\|not found"
 ```
-Dacă apar `file not found` pe target-ul symlink-ului → adaugă mount pentru `/var/lib/rancher/k3s/agent/containerd/io.containerd.grpc.v1.cri/...`.
+Dacă apar `file not found` → adaugă mount `/var/lib/rancher/k3s/agent/containerd/io.containerd.grpc.v1.cri/...`.
 
 ---
 
-## Pas 5/5 — Gap analysis: ce trebuie adăugat ca să ajungă la nivelul referinței
+## G 🟢 — Observații minore (polish)
 
-Referință: `practice/car-platform-sync-gitops`. Mai jos = ce există acolo și lipsește din `constantin-gitops`, ca să atingi parity.
-
-### A. Operatori instalați FĂRĂ workload (de completat — prioritate maximă)
-
-| Lipsă | Ai deja | Trebuie adăugat | Sursă referință |
-|---|---|---|---|
-| **Kafka cluster** | operator `strimzi` | CR `Kafka` + topics | `infra/kafka/` + `argo-apps/infra-kafka.yaml` |
-| **Kafka UI** | — | deployment + ingress | `infra/kafka-ui/` + `argo-apps/infra-kafka-ui.yaml` |
-| **Keycloak realm** | operator `keycloak` | import realm (`KeycloakRealmImport` sau crossplane-config) | `argo-apps/infra-keycloak-realms.yaml` |
-
-> Strimzi și Keycloak operator rulează idle acum — instalate dar fără niciun obiect de gestionat.
-
-### B. Componente infra lipsă
-
-| Lipsă | Rol | Sursă referință | Necesită? |
-|---|---|---|---|
-| **kibana-ingress** | acces Kibana din afară (acum doar port-forward) | `infra/eck-stack/kibana-ingress.yaml` | ✅ da |
-| `crossplane` + `crossplane-keycloak` + `-config` | provisioning declarativ realm Keycloak | `infra/crossplane*/` | opțional (ai operator direct) |
-| `moco` | MySQL operator | `infra/moco/` | doar dacă ai servicii pe MySQL |
-| `mongodb-operator` | MongoDB | `infra/mongodb-operator/` | doar dacă ai servicii pe Mongo |
-| `databases` | CR-uri DB generice (CNPG clusters etc.) | `infra/databases/` | parțial — ai doar `postgres-keycloak` |
-
-### C. Aplicații de business
-
-| Lipsă | Rol | Sursă referință |
+| Observație | Locație | Impact |
 |---|---|---|
-| `apps/mycodeschool` | microserviciile efective | `apps/mycodeschool/` |
-| `scripts/` | helper scripts (build/push/bootstrap) | `scripts/` |
-
-### Prioritizare pentru parity
-
-1. **B → kibana-ingress** (rapid, deblochează accesul la logs).
-2. **A → Keycloak realm** (operator inutil fără realm).
-3. **A → Kafka CR + UI** (operator inutil fără cluster).
-4. **B opțional** (crossplane/moco/mongo) — doar dacă apps-urile le cer.
-5. **C → apps** (după ce infra e completă și verde).
+| Operatori idle (`moco`, `mongodb-operator`) — instalați fără workload (vezi B) | `argo-apps/infra-moco.yaml`, `infra-mongodb-operator.yaml` | RAM irosit pe server2 |
+| ProviderConfig (wave 2) aplicat înainte de Keycloak (wave 3) — provider nu se conectează până Keycloak ready | `crossplane-keycloak-config` | Doar întârziere; reconciliază continuu, OK |
+| Trailing whitespace pe `sync-wave: "0"  ` | mai multe `argo-apps/infra-*.yaml` | Cosmetic |
+| `keycloak-realms` App: ns destinație `crossplane-system` + `path: apps` recurse, dar `apps/` gol | `argo-apps/infra-keycloak-realms.yaml` | Synced gol până adaugi Realm CR (vezi C2) |
+| `reflector` App fără `ServerSideApply` | `argo-apps/infra-reflector.yaml` | OK pentru Helm mic |
 
 ---
 
-## Recap ordine de aplicare
+## Ordine fix recomandată
 
-1. Fix #2 (scheme `http`) — trivial, deblochează ServiceMonitor.
-2. Fix #1 (`ingress.enabled: false`) — deblochează sync Keycloak.
-3. Diagnostic Pas 3 (pod ES) → confirmă RAM/PVC vs securityContext.
-4. #4 (filebeat) doar după ce ES e `green`.
-5. Pas 5 — adaugă în ordine: kibana-ingress → keycloak realm → kafka → apps.
+1. **A** — security, urgent (lărgește `.gitignore`, `git rm --cached`, rotește parolele).
+2. **B** — decide soarta `infra/databases/` (șterge sau wire-uiește în App) + scoate duplicatul `keycloak-pg`.
+3. **D** — trivial (un host kafka-ui).
+4. **C** — aliniază Crossplane la starter (creds reale → Realm CR în `apps/` → scoate `KeycloakRealmImport`).
+5. **E** — după output-ul podului ES (RAM vs securityContext).
+6. **F** — după ce ES e `green`.
