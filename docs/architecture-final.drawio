@@ -158,39 +158,39 @@
           <mxGeometry x="1165" y="730" width="490" height="48" as="geometry" />
         </mxCell>
 
-        <mxCell id="ns-carplatform" value="&lt;b&gt;ns: business&lt;/b&gt; &lt;span style=&quot;font-size:11px;font-weight:normal&quot;&gt;(istio-injection=enabled)&lt;/span&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;viitor&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="ns-carplatform" value="&lt;b&gt;ns: business&lt;/b&gt; &lt;span style=&quot;font-size:11px;font-weight:normal&quot;&gt;(NetworkPolicies default-deny)&lt;/span&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;viitor&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="450" y="810" width="870" height="170" as="geometry" />
         </mxCell>
         <mxCell id="kong" value="&lt;b&gt;Kong / Gateway intern&lt;/b&gt;&lt;br&gt;ingressController=false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8f0;strokeColor=#d79b00;dashed=1;fontStyle=2;" vertex="1" parent="1">
           <mxGeometry x="465" y="850" width="170" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="svc1" value="microserviciu A&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+        <mxCell id="svc1" value="microserviciu A&lt;br&gt;(1/1, fără sidecar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
           <mxGeometry x="650" y="850" width="155" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="svc2" value="microserviciu B&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+        <mxCell id="svc2" value="microserviciu B&lt;br&gt;(1/1, fără sidecar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
           <mxGeometry x="820" y="850" width="155" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="svc3" value="UI&lt;br&gt;(2/2 + Envoy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
+        <mxCell id="svc3" value="UI&lt;br&gt;(1/1, fără sidecar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7faff;strokeColor=#6c8ebf;dashed=1;fontStyle=2;" vertex="1" parent="1">
           <mxGeometry x="990" y="850" width="155" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="cp-note" value="P6 (opțional, dup&amp;#259; platform&amp;#259;): Istio mTLS STRICT • Telemetry → OTLP → Tempo • NetworkPolicies default-deny" style="text;html=1;align=center;verticalAlign=middle;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="cp-note" value="NetworkPolicies default-deny • Tracing: app → OTLP → Tempo (fără sidecar) • Gateway intern: Kong" style="text;html=1;align=center;verticalAlign=middle;fontStyle=2;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="465" y="942" width="815" height="20" as="geometry" />
         </mxCell>
 
-        <mxCell id="ns-istio" value="&lt;b&gt;ns: istio-system&lt;/b&gt; &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;viitor&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf3f3;strokeColor=#b85450;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="ns-istio" value="&lt;b&gt;Service mesh: OMIS (decizie)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1340" y="810" width="330" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="istio-base" value="istio-base (CRDs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="1355" y="845" width="300" height="32" as="geometry" />
+        <mxCell id="istio-base" value="Istio = over-engineering pe single-node&lt;br&gt;(sidecar dublează RAM + complexitate)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;dashed=1;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="845" width="300" height="38" as="geometry" />
         </mxCell>
-        <mxCell id="istiod" value="istiod (control plane)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="1355" y="885" width="300" height="32" as="geometry" />
+        <mxCell id="istiod" value="Tracing: Tempo (OTLP direct din app)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;dashed=1;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="890" width="300" height="32" as="geometry" />
         </mxCell>
-        <mxCell id="kiali" value="Kiali + Tempo (tracing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#b85450;dashed=1;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="1355" y="925" width="300" height="32" as="geometry" />
+        <mxCell id="kiali" value="Linkerd opțional dacă vrei mTLS (≪ Istio)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;dashed=1;fontStyle=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="928" width="300" height="32" as="geometry" />
         </mxCell>
 
-        <mxCell id="legend" value="&lt;b&gt;Legend:&lt;/b&gt;&lt;br&gt;🟥 Red = operatori K8s-native (ECK, Keycloak Op, Istio)&lt;br&gt;🟧 Orange = gateway / edge (nginx, Kong, Dynu, server)&lt;br&gt;🟪 Purple = observability (Prometheus, Grafana)&lt;br&gt;🟩 Green = messaging (Strimzi, Kafka)&lt;br&gt;🟨 Yellow = data persistent&amp;#259; (CNPG, MOCO, Mongo)&lt;br&gt;🟦 Blue = cluster / system / business&lt;br&gt;🟦 Teal = Crossplane (control-plane declarativ)&lt;br&gt;&lt;b&gt;Linie continu&amp;#259;&lt;/b&gt; = sincronizat • &lt;b&gt;linie punctat&amp;#259;&lt;/b&gt; = orphan / de f&amp;#259;cut&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;Wave &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W&amp;lt;n&amp;gt;&lt;/span&gt; = argocd.argoproj.io/sync-wave.&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#999;rounded=1;spacing=8;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="legend" value="&lt;b&gt;Legend:&lt;/b&gt;&lt;br&gt;🟥 Red = operatori K8s-native (ECK, Keycloak Op)&lt;br&gt;🟧 Orange = gateway / edge (nginx, Kong, Dynu, server)&lt;br&gt;🟪 Purple = observability (Prometheus, Grafana)&lt;br&gt;🟩 Green = messaging (Strimzi, Kafka)&lt;br&gt;🟨 Yellow = data persistent&amp;#259; (CNPG, MOCO, Mongo)&lt;br&gt;🟦 Blue = cluster / system / business&lt;br&gt;🟦 Teal = Crossplane (control-plane declarativ)&lt;br&gt;&lt;b&gt;Linie continu&amp;#259;&lt;/b&gt; = sincronizat • &lt;b&gt;linie punctat&amp;#259;&lt;/b&gt; = orphan / de f&amp;#259;cut&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;Wave &lt;span style=&quot;font-size:9px;background:#fff;padding:1px 4px;border:1px solid #999;border-radius:3px&quot;&gt;W&amp;lt;n&amp;gt;&lt;/span&gt; = argocd.argoproj.io/sync-wave.&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#999;rounded=1;spacing=8;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="40" y="1045" width="490" height="215" as="geometry" />
         </mxCell>
 
@@ -203,7 +203,7 @@
         <mxCell id="st-partial" value="&lt;b&gt;🟡 De completat&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;• Wire infra/databases (mysql, mongo) — orphan&lt;br&gt;• Populeaz&amp;#259; apps/ (Crossplane realms)&lt;br&gt;• Fix host kafka-ui → .icode.mywire.org&lt;br&gt;• Ingress prometheus/alertmanager (+ BasicAuth)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="940" y="1080" width="380" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="st-todo" value="&lt;b&gt;⬜ Viitor (opțional)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Layer business: Istio (mTLS) + Tempo&lt;br&gt;+ Kong + microservicii&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="st-todo" value="&lt;b&gt;⬜ Viitor (opțional)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Layer business: Tempo (tracing OTLP) + Kong&lt;br&gt;+ microservicii + NetworkPolicies&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;align=left;verticalAlign=top;spacing=8;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="1335" y="1080" width="330" height="70" as="geometry" />
         </mxCell>
 

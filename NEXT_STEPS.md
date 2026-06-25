@@ -17,7 +17,7 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 | Messaging | Strimzi + Kafka (KRaft) + topics | messaging | ✅ |
 | Data | CNPG + MOCO + MongoDB | data | 🟡 parțial |
 | Auth | Keycloak Operator + Crossplane | auth, crossplane-system | 🟡 parțial |
-| Business | Istio + Tempo + Kong + microservicii | business | ⬜ viitor |
+| Business | Tempo + Kong + microservicii + NetworkPolicies | business | ⬜ viitor |
 
 ---
 
@@ -32,7 +32,7 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 | **P3 — Data & Auth** | CNPG/MOCO/Mongo + Keycloak + Crossplane | 0–4 | 🟡 parțial |
 | **P4 — Ingress public** | TLS pentru toate UI-urile (+ BasicAuth) | 4 | 🟡 parțial |
 | **P5 — Cleanup & sec** | Hardening + fix host-uri | — | ⬜ |
-| **P6 — Business layer** | Istio + Tempo + Kong + microservicii | viitor | ⬜ |
+| **P6 — Business layer** | Tempo + Kong + microservicii + NetworkPolicies | viitor | ⬜ |
 
 ---
 
@@ -79,7 +79,7 @@ Adnotări nginx: `auth-type: basic`, `auth-secret: basic-auth-prom`.
 ## 5. Cleanup & viitor
 
 - **P5:** audit `kind: Secret` plain → SealedSecret; `.gitignore` strict pe `*-raw.yaml`; verifică comentarii leftover din starter în `bootstrap/root.yaml`.
-- **P6 (opțional, după platformă):** Istio (mTLS STRICT) + Tempo (tracing) + Kong (gateway intern) + microservicii cu `istio-injection=enabled`.
+- **P6 (opțional, după platformă):** **fără Istio** — Tempo (tracing OTLP direct din app) + Kong (gateway intern) + NetworkPolicies (izolare default-deny). Pe single-node, sidecar-ul Istio = over-engineering. Dacă vrei mTLS automat: Linkerd (≪ Istio).
 
 ---
 
