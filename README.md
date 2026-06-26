@@ -1,63 +1,69 @@
-# ArgoCD Bootstrap Starter
+# ms-gitops — Platformă GitOps (car-platform)
 
-Starter **minimal** pentru a porni un cluster K3s/K8s cu GitOps prin ArgoCD.
+Platformă **GitOps** pe K3s, gestionată cu **ArgoCD (App-of-Apps)**. Tot ce rulează în cluster e definit aici; `git push` = singura modalitate de a schimba clusterul.
 
-Conține DOAR:
-- App of Apps (root)
-- NGINX Ingress (necesar pentru orice expunere HTTP/HTTPS)
-- Sealed Secrets (necesar pentru a stoca credențiale criptate în git)
-- cert-manager (pentru certificate TLS valide via Let's Encrypt)
+- **Domeniu:** `icode.mywire.org` (Dynu DDNS) · **Server:** server2
+- **Infra:** prin operatori (Strimzi, MOCO, CNPG, Keycloak, ECK, Crossplane)
 
-**Restul componentelor** (cert-manager, ECK + ELK, Prometheus, Grafana, etc.) le adaugi incremental, urmând pattern-ul din `docs/adding-operators.md`.
+---
 
-## De ce minim?
+## 🚦 Unde suntem acum
+| Strat | Status |
+|---|---|
+| Infra (edge, observability, logging, messaging, data, auth) | ✅ funcțional |
+| **Business layer** (microservicii importer/data/UI) | ⬜ **de migrat** → vezi `docs/migrare/` |
 
-- Pornești curat, cu o stivă mică pe care o înțelegi complet
-- Înveți pattern-ul de adăugare operator pas cu pas (nu primești un stack ready-made pe care nu-l înțelegi)
-- Decizi tu ce componente îți trebuie (poate nu vrei ELK, poate vrei alt tool de monitoring)
+> Detaliu status infra + ce mai e de finisat: **[`NEXT_STEPS.md`](NEXT_STEPS.md)**.
 
-Pentru un stack complet (cu observability + cert-manager + Grafana Operator deja configurate), vezi `argocd-platform-starter/` — același folder părinte.
+---
 
-## Structură
+## 📁 Structura repo-ului — unde e ce
+| Folder | Ce conține | Când îl atingi |
+|---|---|---|
+| **`bootstrap/`** | `root.yaml` — App-of-Apps (kickoff manual, o dată) | la instalare |
+| **`argo-apps/`** | definițiile `Application` (o per componentă) | când adaugi un serviciu/operator |
+| **`infra/`** | manifeste + `values.yaml` pt operatori și CR-uri (kafka, databases, keycloak, eck…) | când configurezi infra |
+| **`apps/`** | realms/clients Keycloak declarativi (Crossplane) | când adaugi auth |
+| **`business/`** | *(de creat)* microserviciile business (importer/data/UI) | la migrarea aplicațiilor |
+| **`docs/`** | 📚 **documentația — ÎNCEPE AICI** | mereu |
+| **`scripts/`** | install / wipe / kubeconfig | la setup server |
 
+---
+
+## 🧭 De unde începi (ghid pentru tine)
+
+**1. Înțelegi sistemul** → [`docs/diagrame/`](docs/diagrame/)
+- `architecture-final.pdf` — infra (operatori, namespace-uri, waves)
+- `services-communication.pdf` — cum comunică microserviciile
+
+**2. Vezi ce mai e de făcut pe infra** → [`NEXT_STEPS.md`](NEXT_STEPS.md)
+
+**3. Migrezi business-ul (microserviciile)** → [`docs/migrare/`](docs/migrare/README.md)
+- Urmează în ordine: `00-prerechizite` → `01-data-service` → `02-importer-service` → `03-client-ui`
+- Fiecare ghid are: analiză, directive pas-cu-pas, **Definition of Done**
+- Pentru cod/config exact: [`docs/migrare/SOLUTIONS.md`](docs/migrare/SOLUTIONS.md)
+
+---`
+
+## 🗺️ Harta documentației
 ```
-argocd-bootstrap-starter/
-├── bootstrap/
-│   └── root.yaml                 ← App of Apps (aplicat manual o singură dată)
-├── argo-apps/                     ← scanat de root, NU conține root.yaml
-│   ├── infra-nginx-ingress.yaml
-│   ├── infra-sealed-secrets.yaml
-│   └── infra-cert-manager.yaml
-├── infra/
-│   ├── nginx-ingress/values.yaml
-│   ├── sealed-secrets/values.yaml
-│   └── cert-manager/values.yaml
-├── apps/                          ← gol; aici adaugi Application-uri pentru aplicații
-├── scripts/
-│   ├── cleanup-cluster.sh
-│   └── full-reset.sh
-└── docs/
-    ├── README.md                  ← Setup pas cu pas
-    └── adding-operators.md        ← Cum adaugi un operator nou (RECIPE)
+docs/
+├── README.md                  ← index documentație
+├── diagrame/                  ← scheme vizuale (infra + servicii)
+└── migrare/                   ← migrarea business, serviciu cu serviciu
+    ├── README.md              ← ordine + reguli + DoD
+    ├── MIGRATION_PLAN.md      ← strategia
+    ├── BACKLOG.md             ← epics + stories
+    ├── SOLUTIONS.md           ← cod/config concret
+    └── 00…03                  ← ghiduri de execuție
 ```
 
-**De ce root.yaml stă în `bootstrap/`, nu în `argo-apps/`?**
-Root scanează folderul `argo-apps/`. Dacă root.yaml ar fi acolo, root s-ar "vedea pe sine" → diff infinit + risc ca root să se șteargă singur cu `prune: true`. Mutându-l în `bootstrap/`, scannerul nu îl mai vede.
+## ⚙️ Cum funcționează (pe scurt)
+```
+git push → ArgoCD vede commit-ul → root scanează argo-apps/ → sync per wave → cluster
+```
+`prune: true` + `selfHeal: true` — orice modificare manuală în cluster e corectată din git.
 
-## Workflow tipic
+---
 
-1. **Bootstrap minimal** — folosești acest starter (root + nginx + sealed-secrets) → ArgoCD funcțional cu 3 Applications verzi
-2. **Adaugă incremental** componente (cert-manager, ECK, Prometheus, etc.) folosind recipe-ul din `docs/adding-operators.md`
-3. **Adaugi aplicația ta** ca al N-lea Application în `argo-apps/`
-
-Fiecare pas e un commit + push + ArgoCD sync. **Niciodată** nu apply manual cu `kubectl apply` resurse care ar trebui gestionate de ArgoCD.
-
-## Quick start
-
-Vezi `docs/README.md`.
-
-## Placeholder-e de înlocuit
-
-- `__GITHUB_USERNAME__` → username-ul tău GitHub
-- `__GITHUB_REPO__` → numele repo-ului GitOps
-- Branch în `targetRevision`: `main` sau `master` (verifică ce ai pe GitHub)
+👉 **Următorul pas:** deschide [`docs/migrare/README.md`](docs/migrare/README.md) și începe cu prerechizitele.

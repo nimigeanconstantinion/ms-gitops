@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net" modified="2026-06-25T21:00:00.000Z" agent="claude" version="22.0.0">
+  <diagram name="Services" id="svc-comm">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1740" pageHeight="1180" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="&lt;b&gt;constantin — Microservicii: cine ce face &amp;amp; cum comunic&amp;#259;&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px;font-weight:normal&quot;&gt;Linie continu&amp;#259; = flux date (HTTP/Kafka/JDBC). Linie punctat&amp;#259; = auth (JWT) / loguri. Imagini: Docker Hub &lt;b&gt;ion21/*&lt;/b&gt;.&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="420" y="14" width="900" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Browser&lt;br&gt;(utilizator)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nginx" value="&lt;b&gt;nginx-ingress&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px&quot;&gt;TLS *.icode.mywire.org&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="200" y="305" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e-br-nginx" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="browser" target="nginx"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="ui" value="&lt;b&gt;client (UI)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;ion21/client-service :3000&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;React/Vite. Afi&amp;#537;eaz&amp;#259; produse,&lt;br&gt;login prin Keycloak, cheam&amp;#259; API-urile.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="430" y="130" width="230" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="kong" value="&lt;b&gt;Kong&lt;/b&gt; (gateway intern)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;ruteaz&amp;#259; &lt;span style=&quot;font-family:monospace&quot;&gt;/import&lt;/span&gt; &amp;rarr; importer&lt;br&gt;&lt;span style=&quot;font-family:monospace&quot;&gt;/data&lt;/span&gt; &amp;rarr; data-service&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="430" y="380" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-nginx-ui" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=1;exitY=0.4;entryX=0;entryY=0.5;" edge="1" parent="1" source="nginx" target="ui"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-nginx-kong" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=1;exitY=0.6;entryX=0;entryY=0.5;" edge="1" parent="1" source="nginx" target="kong"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-ui-kong" value="API + Bearer JWT" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;" edge="1" parent="1" source="ui" target="kong"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="importer" value="&lt;b&gt;importer-service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;ion21/import-service :8082&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Import&amp;#259; produse &amp;rarr; &lt;b&gt;public&amp;#259;&lt;/b&gt; evenimente&lt;br&gt;pe Kafka. Scrie &amp;#537;i în MySQL.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="120" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="data" value="&lt;b&gt;data-service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;ion21/data-service :8081&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;b&gt;Consum&amp;#259;&lt;/b&gt; evenimente Kafka &amp;rarr; salveaz&amp;#259;&lt;br&gt;în MySQL &amp;rarr; expune REST API.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="430" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e-kong-importer" value="/import" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=1;exitY=0.3;entryX=0;entryY=0.5;fontSize=10;" edge="1" parent="1" source="kong" target="importer"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-kong-data" value="/data" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;exitX=1;exitY=0.7;entryX=0;entryY=0.5;fontSize=10;" edge="1" parent="1" source="kong" target="data"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="kafka" value="&lt;b&gt;Kafka&lt;/b&gt; (Strimzi `demo`)&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;demo-kafka-bootstrap:9092&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;topic: &lt;b&gt;product-topic&lt;/b&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="295" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-imp-kafka" value="produce" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#9673a6;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;fontStyle=1;" edge="1" parent="1" source="importer" target="kafka"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-kafka-data" value="consume" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#9673a6;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;fontStyle=1;" edge="1" parent="1" source="kafka" target="data"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="keycloak" value="&lt;b&gt;Keycloak&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;realm: &lt;b&gt;rsk&lt;/b&gt;&lt;br&gt;client: register-user&lt;br&gt;auth.icode.mywire.org&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="120" width="220" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="&lt;b&gt;MySQL&lt;/b&gt; (MOCO)&lt;br&gt;&lt;span style=&quot;font-family:monospace;font-size:10px&quot;&gt;moco-mysql-primary.data:3306&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;persisten&amp;#539;&amp;#259; produse&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="350" width="220" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="elk" value="&lt;b&gt;ELK&lt;/b&gt; (logging)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;Elasticsearch + Kibana&lt;br&gt;loguri din servicii (Filebeat)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;verticalAlign=top;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="530" width="220" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-data-mysql" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#d6b656;exitX=1;exitY=0.5;entryX=0;entryY=0.8;fontSize=10;" edge="1" parent="1" source="data" target="mysql"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-imp-mysql" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;strokeColor=#d6b656;exitX=1;exitY=0.6;entryX=0;entryY=0.2;fontSize=10;" edge="1" parent="1" source="importer" target="mysql"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e-ui-kc" value="login OIDC" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;strokeColor=#b85450;exitX=1;exitY=0.2;entryX=0;entryY=0.5;fontSize=10;" edge="1" parent="1" source="ui" target="keycloak"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-imp-kc" value="validare JWT" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;strokeColor=#b85450;exitX=1;exitY=0.2;entryX=0.5;entryY=1;fontSize=10;" edge="1" parent="1" source="importer" target="keycloak"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-data-kc" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;strokeColor=#b85450;exitX=1;exitY=0.3;entryX=0.3;entryY=1;" edge="1" parent="1" source="data" target="keycloak"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-imp-elk" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;strokeColor=#999;exitX=1;exitY=0.85;entryX=0;entryY=0.3;" edge="1" parent="1" source="importer" target="elk"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-data-elk" value="loguri" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;strokeColor=#999;exitX=1;exitY=0.85;entryX=0;entryY=0.6;fontSize=10;" edge="1" parent="1" source="data" target="elk"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="flow" value="&lt;b&gt;Fluxul principal&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;1.&lt;/b&gt; User se logheaz&amp;#259; în UI prin Keycloak (realm &lt;b&gt;rsk&lt;/b&gt;) &amp;rarr; prime&amp;#537;te token JWT.&lt;br&gt;&lt;b&gt;2.&lt;/b&gt; UI cheam&amp;#259; API-ul (cu Bearer) prin Kong &amp;rarr; &lt;b&gt;importer-service&lt;/b&gt; (/import).&lt;br&gt;&lt;b&gt;3.&lt;/b&gt; importer public&amp;#259; un eveniment pe topicul Kafka &lt;b&gt;product-topic&lt;/b&gt;.&lt;br&gt;&lt;b&gt;4.&lt;/b&gt; &lt;b&gt;data-service&lt;/b&gt; consum&amp;#259; evenimentul &amp;rarr; salveaz&amp;#259; produsul în MySQL.&lt;br&gt;&lt;b&gt;5.&lt;/b&gt; UI cite&amp;#537;te produsele prin Kong &amp;rarr; data-service (REST) &amp;rarr; afi&amp;#537;eaz&amp;#259;.&lt;br&gt;&lt;span style=&quot;font-style:italic&quot;&gt;Toate serviciile valideaz&amp;#259; JWT-ul la Keycloak; logurile merg în ELK.&lt;/span&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;align=left;verticalAlign=top;spacing=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="900" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="&lt;b&gt;Legend&amp;#259;&lt;/b&gt;&lt;br&gt;🟦 albastru = UI&lt;br&gt;🟧 portocaliu = gateway/edge (Kong, nginx)&lt;br&gt;🟩 verde = microservicii business (Java)&lt;br&gt;🟪 mov = Kafka (event bus)&lt;br&gt;🟨 galben = MySQL (date)&lt;br&gt;🟥 ro&amp;#537;u = Keycloak (auth) / ELK (loguri)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;— continuu = date · ┄ punctat = auth/loguri&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;align=left;verticalAlign=top;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="980" y="660" width="360" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="warn" value="&lt;b&gt;⚠ De aliniat înainte de deploy în cluster&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;• topic &lt;b&gt;product-topic&lt;/b&gt; lipse&amp;#537;te (ai orders/events/notifications)&lt;br&gt;• realm &lt;b&gt;rsk&lt;/b&gt; + client register-user lipsesc (ai doar demo)&lt;br&gt;• importer e &lt;b&gt;hardcodat&lt;/b&gt; (IP 78.96.25.131, parol&amp;#259; plain) &amp;rarr; de f&amp;#259;cut env-driven&lt;br&gt;• UI: env Vite e build-time &amp;rarr; rebuild cu URL-uri cluster&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="660" width="350" height="200" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

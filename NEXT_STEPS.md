@@ -1,7 +1,7 @@
 # NEXT STEPS — constantin-gitops
 
 > Stare la **2026-06-25**. Domeniu: `icode.mywire.org` (Dynu DDNS). Cluster: K3s.
-> Diagramă: [`docs/architecture-final.pdf`](docs/architecture-final.pdf) — **linie continuă** = sincronizat, **linie punctată** = orphan / de făcut.
+> Diagramă: [`docs/diagrame/architecture-final.pdf`](docs/diagrame/architecture-final.pdf) — **linie continuă** = sincronizat, **linie punctată** = orphan / de făcut.
 
 ---
 
@@ -48,14 +48,8 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 
 ## 4. Ce mai e de făcut (🟡 — în ordinea recomandată)
 
-### a) Wire `infra/databases/` — momentan **orphan**
-`infra/databases/` conține `mysql.yaml`, `mongodb.yaml`, `postgres-cluster.yaml`, dar **niciun Application din `argo-apps/` nu le sincronizează** → operatorii MOCO și MongoDB rulează fără CR-uri. Adaugă o Application:
-
-```yaml
-# argo-apps/infra-databases.yaml — wave 2 (după operatori W0/W1)
-# source.path: infra/databases  +  directory.recurse: true (ca să prindă secrets/)
-```
-**Verify:** `kubectl -n data get cluster,mysqlcluster,mongodbcommunity` → `mysql`, `mongodb`, `postgres` apar Ready.
+### a) ~~Wire `infra/databases/`~~ — ✅ FĂCUT
+`argo-apps/infra-databases.yaml` există și sincronizează CR-urile (mysql/mongo/postgres). **Verify:** `kubectl -n data get cluster,mysqlcluster,mongodbcommunity`.
 
 ### b) Populează `apps/` — Crossplane realms declarativi
 `apps/` are doar `README.md`, dar `infra-keycloak-realms.yaml` (W4) sincronizează `apps/`. Crossplane (core + provider + config) e instalat, dar **nu produce niciun Realm**. Adaugă `Realm` + `Client` + `Role` CR-uri (provider-keycloak) în `apps/<realm>/`.
@@ -85,6 +79,6 @@ Adnotări nginx: `auth-type: basic`, `auth-secret: basic-auth-prom`.
 
 ## 6. Următorul pas concret
 
-**Wire `infra/databases/`** (punctul 4.a) — un commit (`feat: add infra-databases Application — wire mysql/mongo/postgres`), apoi verifică în UI ArgoCD că Application e Synced + Healthy.
+**Finisează infra** (punctele b–d de mai sus), apoi treci la **migrarea layer-ului business** (microserviciile) → urmează ghidurile din **[`docs/migrare/`](docs/migrare/README.md)** (prerechizite → data-service → importer → UI).
 
 > Reminder: o etapă = un commit + push → ArgoCD sync. **Niciodată** `kubectl apply` manual pe resurse gestionate de ArgoCD.
