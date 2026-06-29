@@ -4,7 +4,7 @@ yamlApplicationConfig:
   kafka:
     clusters:
       - name: demo
-        bootstrapServers: kafka-ui.icode.mywire.org:9092
+        bootstrapServers: demo-kafka-bootstrap.messaging.svc.cluster.local:9092
   auth:
     type: disabled
   management:
