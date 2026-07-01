@@ -10,10 +10,18 @@ metadata:
 spec:
   project: default
 
-  source:
-    repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
-    targetRevision: master
-    path: business
+  sources:
+    - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+      targetRevision: master
+      path: business/charts/microservice
+      helm:
+        releaseName: data-service
+        valueFiles:
+          - $values/business/data-service/values.yaml
+
+    - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
+      targetRevision: master
+      ref: values
 
   destination:
     server: https://kubernetes.default.svc
