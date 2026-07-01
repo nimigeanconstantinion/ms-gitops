@@ -10,11 +10,3 @@ spec:
   replicas: 1
   config:
     retention.ms: 259200000   # 3 zile
----
-apiVersion: kafka.strimzi.io/v1
-kind: KafkaTopic
-metadata:
-  name: product-topic
-  namespace: messaging
-  labels: { strimzi.io/cluster: demo }
-spec: { partitions: 3, replicas: 1 }    

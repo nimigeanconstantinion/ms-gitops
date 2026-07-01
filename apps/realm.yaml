@@ -1,0 +1,19 @@
+# apps/rsk/realm.yaml
+apiVersion: realm.keycloak.crossplane.io/v1alpha1
+kind: Realm
+metadata: { name: rsk }
+spec:
+  forProvider: { realm: rsk, enabled: true }
+  providerConfigRef: { name: keycloak-provider-config }
+---
+apiVersion: openidclient.keycloak.crossplane.io/v1alpha1
+kind: Client
+metadata: { name: register-user }
+spec:
+  forProvider:
+    realmId: rsk
+    clientId: register-user
+    accessType: CONFIDENTIAL
+    standardFlowEnabled: true
+    validRedirectUris: ["https://app.icode.mywire.org/*"]
+  providerConfigRef: { name: keycloak-provider-config }
