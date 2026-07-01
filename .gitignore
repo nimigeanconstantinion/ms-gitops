@@ -18,6 +18,8 @@ kubeconfig
 
 # Helm cache
 charts/
+!business/charts/
+!business/charts/**
 Chart.lock
 
 # Logs
