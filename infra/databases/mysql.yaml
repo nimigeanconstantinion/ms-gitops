@@ -12,6 +12,10 @@ metadata:
   namespace: data
 spec:
   replicas: 1
+  secret:
+    annotations:
+      reflector.stakater.com/reflection-allowed: "true"
+      reflector.stakater.com/reflection-allowed-namespaces: "business" # Pune aici namespace-ul microserviciului tău (sau "*" pentru toate)
   podTemplate:
     spec:
       containers:

@@ -24,8 +24,8 @@ env:
   KEYCLOAK_JWK_SET_URI: https://auth.icode.mywire.org/realms/rsk/protocol/openid-connect/certs
 
 secretEnv:
-  MYSQL_USERNAME: { secret: mysql-app, key: WRITABLE_USER }
-  MYSQL_PASSWORD: { secret: mysql-app, key: WRITABLE_PASSWORD }
+  MYSQL_USERNAME: { secret: mysql-app-credentials, key: WRITABLE_USER }
+  MYSQL_PASSWORD: { secret: mysql-app-credentials, key: WRITABLE_PASSWORD }
 
 probes:
   path: /actuator/health
