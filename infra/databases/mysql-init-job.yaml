@@ -40,6 +40,5 @@ spec:
               CREATE USER IF NOT EXISTS '${APP_USER}'@'%' IDENTIFIED BY '${APP_PASSWORD}';
               ALTER USER '${APP_USER}'@'%' IDENTIFIED BY '${APP_PASSWORD}';
               GRANT ALL PRIVILEGES ON micro_db.* TO '${APP_USER}'@'%';
-              FLUSH PRIVILEGES;
               SQL
               echo "OK: user ${APP_USER} + baza micro_db provizionate."
