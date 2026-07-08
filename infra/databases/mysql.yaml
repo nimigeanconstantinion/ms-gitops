@@ -14,8 +14,8 @@ spec:
   replicas: 1
   secret:
     annotations:
-      reflector.stakater.com/reflection-allowed: "true"
-      reflector.stakater.com/reflection-allowed-namespaces: "business" # Pune aici namespace-ul microserviciului tău (sau "*" pentru toate)
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "business" # Pune aici namespace-ul microserviciului tău (sau "*" pentru toate)
   podTemplate:
     spec:
       containers:
