@@ -21,8 +21,7 @@ spec:
         - name: init
           image: mysql:8.4
           env:
-            - name: WRITABLE_USER
-              valueFrom: { secretKeyRef: { name: moco-mysql, key: WRITABLE_USER } }
+            # moco-mysql contine DOAR chei de parola; userul e constanta fixa `moco-writable`.
             - name: WRITABLE_PASSWORD
               valueFrom: { secretKeyRef: { name: moco-mysql, key: WRITABLE_PASSWORD } }
             - name: APP_USER
@@ -33,10 +32,10 @@ spec:
             - bash
             - -ec
             - |
-              until mysqladmin ping -h moco-mysql-primary.data.svc -u"$WRITABLE_USER" -p"$WRITABLE_PASSWORD" --silent; do
+              until mysqladmin ping -h moco-mysql-primary.data.svc -umoco-writable -p"$WRITABLE_PASSWORD" --silent; do
                 echo "astept MySQL..."; sleep 3
               done
-              mysql -h moco-mysql-primary.data.svc -u"$WRITABLE_USER" -p"$WRITABLE_PASSWORD" <<SQL
+              mysql -h moco-mysql-primary.data.svc -umoco-writable -p"$WRITABLE_PASSWORD" <<SQL
               CREATE DATABASE IF NOT EXISTS micro_db;
               CREATE USER IF NOT EXISTS '${APP_USER}'@'%' IDENTIFIED BY '${APP_PASSWORD}';
               ALTER USER '${APP_USER}'@'%' IDENTIFIED BY '${APP_PASSWORD}';
