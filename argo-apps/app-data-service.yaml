@@ -17,7 +17,7 @@ spec:
       helm:
         releaseName: data-service
         valueFiles:
-          - $values/business/data-service/values.yaml
+          - $values/business/rsk/data-service/values.yaml
 
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master

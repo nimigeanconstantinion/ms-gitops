@@ -23,8 +23,7 @@ Platformă **GitOps** pe K3s, gestionată cu **ArgoCD (App-of-Apps)**. Tot ce ru
 | **`bootstrap/`** | `root.yaml` — App-of-Apps (kickoff manual, o dată) | la instalare |
 | **`argo-apps/`** | definițiile `Application` (o per componentă) | când adaugi un serviciu/operator |
 | **`infra/`** | manifeste + `values.yaml` pt operatori și CR-uri (kafka, databases, keycloak, eck…) | când configurezi infra |
-| **`apps/`** | realms/clients Keycloak declarativi (Crossplane) | când adaugi auth |
-| **`business/`** | *(de creat)* microserviciile business (importer/data/UI) | la migrarea aplicațiilor |
+| **`business/`** | chart-ul comun (`charts/microservice`), `rsk/keycloak/` (realm `KeycloakRealmImport`) și `rsk/<serviciu>/values.yaml` | la migrarea aplicațiilor + auth |
 | **`docs/`** | 📚 **documentația — ÎNCEPE AICI** | mereu |
 | **`scripts/`** | install / wipe / kubeconfig | la setup server |
 

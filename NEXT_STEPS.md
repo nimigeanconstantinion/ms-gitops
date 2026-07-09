@@ -51,9 +51,10 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 ### a) ~~Wire `infra/databases/`~~ — ✅ FĂCUT
 `argo-apps/infra-databases.yaml` există și sincronizează CR-urile (mysql/mongo/postgres). **Verify:** `kubectl -n data get cluster,mysqlcluster,mongodbcommunity`.
 
-### b) Populează `apps/` — Crossplane realms declarativi
-`apps/` are doar `README.md`, dar `infra-keycloak-realms.yaml` (W4) sincronizează `apps/`. Crossplane (core + provider + config) e instalat, dar **nu produce niciun Realm**. Adaugă `Realm` + `Client` + `Role` CR-uri (provider-keycloak) în `apps/<realm>/`.
-**Verify:** `kubectl get realm,client,role -A` → resursele tale apar `SYNCED=True`.
+### b) ~~Realm declarativ~~ — ✅ FĂCUT (ca car-platform)
+Realm-ul `rsk` (+ clienți + useri) e definit ca **`KeycloakRealmImport`** în `business/rsk/keycloak/realm-rsk.yaml` (ns `auth`), sincronizat de `argo-apps/app-rsk-keycloak.yaml` (W4). **Nu** prin Crossplane — exact pattern-ul din car-platform (`business/<platform>/keycloak/realm-*.yaml`).
+> Crossplane (core + provider-keycloak + config) rămâne instalat dar **neutilizat** pentru realm-uri. De evaluat dacă îl păstrezi (ca în car-platform) sau îl scoți.
+**Verify:** `kubectl -n auth get keycloakrealmimport` → `rsk-realm` cu `Done=True`; `curl -s https://auth.icode.mywire.org/realms/rsk/protocol/openid-connect/certs | head`.
 
 ### c) Fix host Kafka UI (copy-paste din alt repo)
 `infra/kafka-ui/values.yaml` → `host: kafka-ui.aws.mycodepractice.com`. Schimbă în `kafka-ui.icode.mywire.org` (domeniul tău).
