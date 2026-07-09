@@ -16,7 +16,7 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 | Logging | ECK: Elasticsearch + Kibana + Filebeat | logging | ✅ |
 | Messaging | Strimzi + Kafka (KRaft) + topics | messaging | ✅ |
 | Data | CNPG + MOCO + MongoDB | data | 🟡 parțial |
-| Auth | Keycloak Operator + Crossplane | auth, crossplane-system | 🟡 parțial |
+| Auth | Keycloak Operator + KeycloakRealmImport | auth | ✅ |
 | Business | Tempo + Kong + microservicii + NetworkPolicies | business | ⬜ viitor |
 
 ---
@@ -29,7 +29,7 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 | **P0 — Observability** | Prometheus + Alertmanager + Grafana + exporters | 1 | ✅ |
 | **P1 — Logging** | Elasticsearch + Kibana + Filebeat (4 apps) | 0/2/3 | ✅ |
 | **P2 — Messaging** | Kafka KRaft + 3 topics + Kafka UI | 0/2/3 | ✅ |
-| **P3 — Data & Auth** | CNPG/MOCO/Mongo + Keycloak + Crossplane | 0–4 | 🟡 parțial |
+| **P3 — Data & Auth** | CNPG/MOCO/Mongo + Keycloak + KeycloakRealmImport | 0–4 | 🟡 parțial |
 | **P4 — Ingress public** | TLS pentru toate UI-urile (+ BasicAuth) | 4 | 🟡 parțial |
 | **P5 — Cleanup & sec** | Hardening + fix host-uri | — | ⬜ |
 | **P6 — Business layer** | Tempo + Kong + microservicii + NetworkPolicies | viitor | ⬜ |
@@ -52,8 +52,7 @@ Platformă **GitOps completă** într-un singur repo: ArgoCD App-of-Apps, totul 
 `argo-apps/infra-databases.yaml` există și sincronizează CR-urile (mysql/mongo/postgres). **Verify:** `kubectl -n data get cluster,mysqlcluster,mongodbcommunity`.
 
 ### b) ~~Realm declarativ~~ — ✅ FĂCUT (ca car-platform)
-Realm-ul `rsk` (+ clienți + useri) e definit ca **`KeycloakRealmImport`** în `business/rsk/keycloak/realm-rsk.yaml` (ns `auth`), sincronizat de `argo-apps/app-rsk-keycloak.yaml` (W4). **Nu** prin Crossplane — exact pattern-ul din car-platform (`business/<platform>/keycloak/realm-*.yaml`).
-> Crossplane (core + provider-keycloak + config) rămâne instalat dar **neutilizat** pentru realm-uri. De evaluat dacă îl păstrezi (ca în car-platform) sau îl scoți.
+Realm-ul `rsk` (+ clienți + useri) e definit ca **`KeycloakRealmImport`** în `business/rsk/keycloak/realm-rsk.yaml` (ns `auth`), sincronizat de `argo-apps/app-rsk-keycloak.yaml` (W4). Crossplane a fost eliminat complet (era neutilizat).
 **Verify:** `kubectl -n auth get keycloakrealmimport` → `rsk-realm` cu `Done=True`; `curl -s https://auth.icode.mywire.org/realms/rsk/protocol/openid-connect/certs | head`.
 
 ### c) Fix host Kafka UI (copy-paste din alt repo)

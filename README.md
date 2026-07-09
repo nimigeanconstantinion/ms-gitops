@@ -3,7 +3,7 @@
 Platformă **GitOps** pe K3s, gestionată cu **ArgoCD (App-of-Apps)**. Tot ce rulează în cluster e definit aici; `git push` = singura modalitate de a schimba clusterul.
 
 - **Domeniu:** `icode.mywire.org` (Dynu DDNS) · **Server:** server2
-- **Infra:** prin operatori (Strimzi, MOCO, CNPG, Keycloak, ECK, Crossplane)
+- **Infra:** prin operatori (Strimzi, MOCO, CNPG, Keycloak, ECK)
 
 ---
 
