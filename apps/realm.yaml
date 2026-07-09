@@ -1,91 +1,24 @@
-# Realm importat declarativ folosind Keycloak Operator.
-# Acest manifest creează realm-ul 'rsk' cu toți clienții și utilizatorii din JSON.
+# Realm demo importat declarativ. KeycloakRealmImport = creare declarativa (nu
+# update/delete). Contine realm-ul + un client public `demo-client` pentru testarea
+# login-ului din aplicatii. Userii ii creezi din UI sau ii adaugi aici la nevoie.
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: KeycloakRealmImport
 metadata:
   name: rsk-realm
-  namespace: auth  # Asigură-te că este namespace-ul unde rulează instanța ta de Keycloak
+  namespace: auth
 spec:
   keycloakCRName: keycloak
   realm:
-    id: rsk
     realm: rsk
     enabled: true
-    displayName: "RSK Production Realm"
-    registrationAllowed: true
-    
-    # --- CONFIGURARE CLIENȚI ---
+    displayName: "RSK Realm"
     clients:
-      - clientId: react-client
-        protocol: openid-connect
+      - clientId: demo-client
         enabled: true
         publicClient: true
         standardFlowEnabled: true
         directAccessGrantsEnabled: true
         redirectUris:
-          - "http://localhost:5174/*"
-          - "http://localhost:5000/*"
-          - "http://react-app.local/*"
-          - "http://192.168.0.112/*"
-          - "http://localhost:3000/*"
-          - "http://client/*"
+          - "*"
         webOrigins:
-          - "+"
-        attributes:
-          pkce.code.challenge.method: "S256"
-          post.logout.redirect.uris: "+"
-
-      - clientId: spring-api
-        protocol: openid-connect
-        enabled: true
-        bearerOnly: false
-        publicClient: false
-        secret: "your-secret-key-here-change-in-production"
-        standardFlowEnabled: false
-        directAccessGrantsEnabled: false
-        serviceAccountsEnabled: false
-        authorizationServicesEnabled: false
-
-      - clientId: registration-service
-        name: "Registration Service Client"
-        protocol: openid-connect
-        enabled: true
-        publicClient: false
-        bearerOnly: false
-        standardFlowEnabled: false
-        implicitFlowEnabled: false
-        directAccessGrantsEnabled: false
-        serviceAccountsEnabled: true
-        clientAuthenticatorType: "client-secret"
-        secret: "my-secret-keycloak"
-        fullScopeAllowed: true
-        redirectUris: []
-        webOrigins: []
-        defaultClientScopes:
-          - "openid"
-          - "profile"
-
-    # --- CONFIGURARE UTILIZATORI ---
-    users:
-      - username: test
-        enabled: true
-        emailVerified: true
-        credentials:
-          - type: password
-            value: test
-            temporary: false
-        realmRoles:
-          - "USER"
-        clientRoles:
-          account:
-            - "view-profile"
-
-      - username: admin
-        enabled: true
-        emailVerified: true
-        credentials:
-          - type: password
-            value: admin
-            temporary: false
-        realmRoles:
-          - "ADMIN"
+          - "*"
