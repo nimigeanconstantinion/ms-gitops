@@ -15,18 +15,16 @@ spec:
 
     # --- CLIENȚI ---
     clients:
-      # Păstrat de la testul tău inițial care a funcționat
+      # Client de test pentru token via direct access grant (curl/Postman) — fără redirect.
       - clientId: demo-client
         enabled: true
         publicClient: true
-        standardFlowEnabled: true
+        standardFlowEnabled: false
         directAccessGrantsEnabled: true
-        redirectUris:
-          - "*"
-        webOrigins:
-          - "*"
+        redirectUris: []
+        webOrigins: []
 
-      # Adăugat din JSON: react-client (Frontend)
+      # Adăugat din JSON: react-client (Frontend). Redirect-uri EXACTE (fără "*").
       - clientId: react-client
         protocol: openid-connect
         enabled: true
@@ -40,12 +38,28 @@ spec:
           - "http://192.168.0.112/*"
           - "http://localhost:3000/*"
           - "http://client/*"
-          - "*"
         webOrigins:
           - "+"
         attributes:
           pkce.code.challenge.method: "S256"
           post.logout.redirect.uris: "+"
+
+      # Client dedicat pentru Swagger UI (OAuth2 authorizationCode + PKCE), stil car-platform.
+      - clientId: data-service-swagger
+        name: "Data Service Swagger"
+        protocol: openid-connect
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: true
+        directAccessGrantsEnabled: false
+        redirectUris:
+          - "http://localhost:8081/swagger-ui/oauth2-redirect.html"
+          - "https://data.icode.mywire.org/swagger-ui/oauth2-redirect.html"
+        webOrigins:
+          - "http://localhost:8081"
+          - "https://data.icode.mywire.org"
+        attributes:
+          pkce.code.challenge.method: "S256"
 
       # Adăugat din JSON: spring-api (Backend API)
       - clientId: spring-api
