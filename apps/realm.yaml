@@ -1,6 +1,4 @@
-# Realm demo importat declarativ. KeycloakRealmImport = creare declarativa (nu
-# update/delete). Contine realm-ul + un client public `demo-client` pentru testarea
-# login-ului din aplicatii. Userii ii creezi din UI sau ii adaugi aici la nevoie.
+# Realm importat declarativ. Contine realm-ul rsk, demo-client + configuratiile din json.
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: KeycloakRealmImport
 metadata:
@@ -9,10 +7,15 @@ metadata:
 spec:
   keycloakCRName: keycloak
   realm:
+    id: rsk
     realm: rsk
     enabled: true
     displayName: "RSK Realm"
+    registrationAllowed: true
+
+    # --- CLIENȚI ---
     clients:
+      # Păstrat de la testul tău inițial care a funcționat
       - clientId: demo-client
         enabled: true
         publicClient: true
@@ -22,3 +25,80 @@ spec:
           - "*"
         webOrigins:
           - "*"
+
+      # Adăugat din JSON: react-client (Frontend)
+      - clientId: react-client
+        protocol: openid-connect
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: true
+        directAccessGrantsEnabled: true
+        redirectUris:
+          - "http://localhost:5174/*"
+          - "http://localhost:5000/*"
+          - "http://react-app.local/*"
+          - "http://192.168.0.112/*"
+          - "http://localhost:3000/*"
+          - "http://client/*"
+        webOrigins:
+          - "+"
+        attributes:
+          pkce.code.challenge.method: "S256"
+          post.logout.redirect.uris: "+"
+
+      # Adăugat din JSON: spring-api (Backend API)
+      - clientId: spring-api
+        protocol: openid-connect
+        enabled: true
+        bearerOnly: false
+        publicClient: false
+        secret: "your-secret-key-here-change-in-production"
+        standardFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: false
+        authorizationServicesEnabled: false
+
+      # Adăugat din JSON: registration-service (Service account cu secret explicit)
+      - clientId: registration-service
+        name: "Registration Service Client"
+        protocol: openid-connect
+        enabled: true
+        publicClient: false
+        bearerOnly: false
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        clientAuthenticatorType: "client-secret"
+        secret: "my-secret-keycloak"
+        fullScopeAllowed: true
+        redirectUris: []
+        webOrigins: []
+        defaultClientScopes:
+          - "openid"
+          - "profile"
+
+    # --- UTILIZATORI COPIAȚI DIN JSON ---
+    users:
+      - username: test
+        enabled: true
+        emailVerified: true
+        credentials:
+          - type: password
+            value: test
+            temporary: false
+        realmRoles:
+          - "USER"
+        clientRoles:
+          account:
+            - "view-profile"
+
+      - username: admin
+        enabled: true
+        emailVerified: true
+        credentials:
+          - type: password
+            value: admin
+            temporary: false
+        realmRoles:
+          - "ADMIN"
