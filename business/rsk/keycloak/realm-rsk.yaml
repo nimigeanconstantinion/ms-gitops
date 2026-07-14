@@ -45,21 +45,38 @@ spec:
           post.logout.redirect.uris: "+"
 
       # Client dedicat pentru Swagger UI (OAuth2 authorizationCode + PKCE), stil car-platform.
+      # - clientId: data-service-swagger
+      #   name: "Data Service Swagger"
+      #   protocol: openid-connect
+      #   enabled: true
+      #   publicClient: true
+      #   standardFlowEnabled: true
+      #   directAccessGrantsEnabled: false
+      #   redirectUris:
+      #     - "http://localhost:8081/swagger-ui/oauth2-redirect.html"
+      #     - "https://data.icode.mywire.org/swagger-ui/oauth2-redirect.html"
+      #   webOrigins:
+      #     - "http://localhost:8081"
+      #     - "https://data.icode.mywire.org"
+      #   attributes:
+      #     pkce.code.challenge.method: "S256"
+
+# Client dedicat pentru Swagger UI (OAuth2 authorizationCode + PKCE), stil react-client.
       - clientId: data-service-swagger
         name: "Data Service Swagger"
         protocol: openid-connect
         enabled: true
         publicClient: true
         standardFlowEnabled: true
-        directAccessGrantsEnabled: false
+        directAccessGrantsEnabled: true # Activat la fel ca la react-client pentru compatibilitate maximă în dev
         redirectUris:
           - "http://localhost:8081/swagger-ui/oauth2-redirect.html"
           - "https://data.icode.mywire.org/swagger-ui/oauth2-redirect.html"
         webOrigins:
-          - "http://localhost:8081"
-          - "https://data.icode.mywire.org"
+          - "+" # Folosim "+" la fel ca la react-client pentru a prelua automat originile din redirectUris (previne problemele de CORS)
         attributes:
           pkce.code.challenge.method: "S256"
+          post.logout.redirect.uris: "+" # Adăugat la fel ca la react-client
 
       # Adăugat din JSON: spring-api (Backend API)
       - clientId: spring-api
