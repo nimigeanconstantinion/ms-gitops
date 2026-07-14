@@ -24,6 +24,14 @@ spec:
         redirectUris: []
         webOrigins: []
 
+      - clientId: new-client
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: false
+        directAccessGrantsEnabled: true
+        redirectUris: []
+        webOrigins: []
+
       # Adăugat din JSON: react-client (Frontend). Redirect-uri EXACTE (fără "*").
       - clientId: react-client
         protocol: openid-connect
