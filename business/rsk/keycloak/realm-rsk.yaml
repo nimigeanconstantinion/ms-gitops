@@ -86,17 +86,34 @@ spec:
           pkce.code.challenge.method: "S256"
           post.logout.redirect.uris: "+" # Adăugat la fel ca la react-client
 
-      # Adăugat din JSON: spring-api (Backend API)
-      - clientId: spring-api
+      # oauth2-proxy: poarta de auth (network gate) inainte de Kong, stil car-platform.
+      # Client confidential FARA secret in fisier -> Keycloak il genereaza; il pui intr-un
+      # SealedSecret (oauth2-proxy-keycloak) la bootstrap. Vezi business/rsk/oauth2-proxy/README.md.
+      - clientId: oauth2-proxy
+        name: "OAuth2 Proxy"
         protocol: openid-connect
         enabled: true
-        bearerOnly: false
         publicClient: false
-        secret: "your-secret-key-here-change-in-production"
-        standardFlowEnabled: false
+        standardFlowEnabled: true
         directAccessGrantsEnabled: false
-        serviceAccountsEnabled: false
-        authorizationServicesEnabled: false
+        redirectUris:
+          - "https://data-service.icode.mywire.org/oauth2/callback"
+        webOrigins:
+          - "+"
+        defaultClientScopes:
+          - "openid"
+          - "profile"
+          - "email"
+        protocolMappers:
+          - name: groups
+            protocol: openid-connect
+            protocolMapper: oidc-group-membership-mapper
+            config:
+              "claim.name": "groups"
+              "full.path": "true"
+              "access.token.claim": "true"
+              "id.token.claim": "true"
+              "userinfo.token.claim": "true"
 
       # Adăugat din JSON: registration-service (Service account cu secret explicit)
       - clientId: registration-service
@@ -117,6 +134,10 @@ spec:
         defaultClientScopes:
           - "openid"
           - "profile"
+
+    # --- GRUPURI --- (oauth2-proxy lasa sa treaca doar membrii /admins)
+    groups:
+      - name: admins
 
     # --- UTILIZATORI COPIAȚI DIN JSON ---
     users:
@@ -142,3 +163,5 @@ spec:
             temporary: false
         realmRoles:
           - "ADMIN"
+        groups:
+          - "/admins"

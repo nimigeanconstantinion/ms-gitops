@@ -42,8 +42,4 @@ service:
   port: 8081
 
 ingress:
-  enabled: true
-  className: nginx
-  clusterIssuer: letsencrypt-prod
-  host: data.icode.mywire.org
-  tlsSecretName: data-service-tls
+  enabled: false
