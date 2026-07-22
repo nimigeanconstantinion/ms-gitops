@@ -14,4 +14,4 @@ services:
     routes:
       - name: data-service
         hosts:
-          - data.icode.mywire.org
+          - data-service.icode.mywire.org
