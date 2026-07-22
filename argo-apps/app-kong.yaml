@@ -17,7 +17,7 @@ spec:
       helm:
         releaseName: kong
         valueFiles:
-          - $values/business/data-service/kong/values.yaml
+          - $values/business/rsk/data-service/kong/values.yaml
 
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
