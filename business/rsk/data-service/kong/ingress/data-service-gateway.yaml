@@ -14,10 +14,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - data.icode.mywire.org
+        - data-service.icode.mywire.org
       secretName: business-gw-tls-cert
   rules:
-    - host: data.icode.mywire.org
+    - host: data-service.icode.mywire.org
       http:
         paths:
           - path: /
