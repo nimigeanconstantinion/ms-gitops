@@ -16,7 +16,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: keycloak-config-cli
-          image: adorsys/keycloak-config-cli:6.2.1-26.0.5
+          image: adorsys/keycloak-config-cli:6.5.1-26.1.0
           env:
             - name: KEYCLOAK_URL
               value: https://auth.icode.mywire.org
