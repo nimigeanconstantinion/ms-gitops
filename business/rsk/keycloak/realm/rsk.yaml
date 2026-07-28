@@ -72,11 +72,15 @@ clients:
       - "https://data-service.icode.mywire.org/oauth2/callback"
     webOrigins:
       - "+"
-    # fara "openid" aici: nu e client scope real in Keycloak (e implicit in OIDC);
-    # config-cli e strict si da NPE daca scope-ul nu exista.
+    # scope-urile default Keycloak, explicit ("openid" NU exista ca scope -> NPE in config-cli).
+    # "roles" e obligatoriu: pune aud=account in access token (cerut de --oidc-extra-audience=account).
     defaultClientScopes:
       - "profile"
       - "email"
+      - "roles"
+      - "web-origins"
+      - "acr"
+      - "basic"
     protocolMappers:
       - name: groups
         protocol: openid-connect
