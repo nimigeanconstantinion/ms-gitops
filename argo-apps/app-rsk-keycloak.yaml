@@ -4,8 +4,8 @@ metadata:
   name: rsk-keycloak
   namespace: argocd
   annotations:
-    # wave 4: dupa Keycloak Operator + Keycloak CR (wave 3). KeycloakRealmImport
-    # e procesat de operator, deci realm-ul apare dupa ce Keycloak e ready.
+    # wave 4: dupa Keycloak Operator + Keycloak CR (wave 3). Realm-ul e aplicat de
+    # keycloak-config-cli (Sync hook Job, kustomize) — idempotent, update pe realm existent.
     argocd.argoproj.io/sync-wave: "4"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -16,8 +16,6 @@ spec:
     repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
     targetRevision: master
     path: business/rsk/keycloak
-    directory:
-      recurse: true
 
   destination:
     server: https://kubernetes.default.svc
@@ -30,5 +28,3 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      # CRD-ul KeycloakRealmImport apare abia dupa ce keycloak-operator se instaleaza.
-      - SkipDryRunOnMissingResource=true
