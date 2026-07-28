@@ -72,8 +72,9 @@ clients:
       - "https://data-service.icode.mywire.org/oauth2/callback"
     webOrigins:
       - "+"
+    # fara "openid" aici: nu e client scope real in Keycloak (e implicit in OIDC);
+    # config-cli e strict si da NPE daca scope-ul nu exista.
     defaultClientScopes:
-      - "openid"
       - "profile"
       - "email"
     protocolMappers:
@@ -104,7 +105,6 @@ clients:
     redirectUris: []
     webOrigins: []
     defaultClientScopes:
-      - "openid"
       - "profile"
 
 # oauth2-proxy lasa sa treaca doar membrii /admins
