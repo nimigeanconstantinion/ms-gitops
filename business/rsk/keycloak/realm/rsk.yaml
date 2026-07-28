@@ -91,6 +91,15 @@ clients:
           "access.token.claim": "true"
           "id.token.claim": "true"
           "userinfo.token.claim": "true"
+      # aud=oauth2-proxy in access token pentru ORICE user (altfel aud apare doar
+      # daca userul are roluri de account, si oauth2-proxy respinge token-ul fara aud).
+      - name: audience
+        protocol: openid-connect
+        protocolMapper: oidc-audience-mapper
+        config:
+          "included.client.audience": "oauth2-proxy"
+          "access.token.claim": "true"
+          "id.token.claim": "true"
 
   # registration-service (service account cu secret explicit)
   - clientId: registration-service
