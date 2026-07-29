@@ -17,7 +17,7 @@ spec:
       helm:
         releaseName: kong
         valueFiles:
-          - $values/business/rsk/data-service/kong/values.yaml
+          - $values/business/rsk/kong/values.yaml
 
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
@@ -25,11 +25,11 @@ spec:
 
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
-      path: business/rsk/data-service/kong/ingress
+      path: business/rsk/kong/ingress
 
     - repoURL: https://github.com/nimigeanconstantinion/ms-gitops.git
       targetRevision: master
-      path: business/rsk/data-service/kong/declarative
+      path: business/rsk/kong/declarative
 
   destination:
     server: https://kubernetes.default.svc
