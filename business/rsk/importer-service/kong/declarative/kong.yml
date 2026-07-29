@@ -1,0 +1,17 @@
+_format_version: "3.0"
+
+upstreams:
+  - name: data-service-upstream
+    targets:
+      - target: data-service.business.svc:8081
+        weight: 100
+
+services:
+  - name: data-service
+    host: data-service-upstream
+    port: 8081
+    protocol: http
+    routes:
+      - name: data-service
+        hosts:
+          - data-service.icode.mywire.org
