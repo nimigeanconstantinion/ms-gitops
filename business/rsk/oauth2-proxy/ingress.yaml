@@ -13,8 +13,22 @@ spec:
     - hosts:
         - data-service.icode.mywire.org
       secretName: business-gw-tls-cert
+    - hosts:
+        - importer-service.icode.mywire.org
+      secretName: business-gw-tls-cert
+
   rules:
     - host: data-service.icode.mywire.org
+      http:
+        paths:
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: oauth2-proxy
+                port:
+                  number: 4180
+    - host: importer-service.icode.mywire.org
       http:
         paths:
           - path: /oauth2
