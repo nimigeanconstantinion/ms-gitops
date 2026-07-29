@@ -57,6 +57,23 @@ clients:
       pkce.code.challenge.method: "S256"
       post.logout.redirect.uris: "+"
 
+  # Client dedicat pentru Swagger UI importer (OAuth2 authorizationCode + PKCE).
+  - clientId: importer-service-swagger
+    name: "Importer Service Swagger"
+    protocol: openid-connect
+    enabled: true
+    publicClient: true
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    redirectUris:
+      - "http://localhost:8082/swagger-ui/oauth2-redirect.html"
+      - "https://importer-service.icode.mywire.org/swagger-ui/oauth2-redirect.html"
+    webOrigins:
+      - "+"
+    attributes:
+      pkce.code.challenge.method: "S256"
+      post.logout.redirect.uris: "+"
+
   # oauth2-proxy: poarta de auth (network gate) inainte de Kong.
   # Secret EXPLICIT (determinist) — aceeasi valoare e in SealedSecret oauth2-proxy-keycloak (ns business).
   - clientId: oauth2-proxy

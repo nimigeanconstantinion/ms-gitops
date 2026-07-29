@@ -22,7 +22,7 @@ env:
   KEYCLOAK_REALM: rsk
   KEYCLOAK_ISSUER: https://auth.icode.mywire.org/realms/rsk
   KEYCLOAK_JWK_SET_URI: https://auth.icode.mywire.org/realms/rsk/protocol/openid-connect/certs
-  SWAGGER_CLIENT_ID: data-service-swagger
+  SWAGGER_CLIENT_ID: importer-service-swagger
 
 secretEnv:
   MYSQL_USERNAME: { secret: external-db, key: READ_USER }
