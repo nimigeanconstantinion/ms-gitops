@@ -15,7 +15,7 @@ spec:
       secretName: business-gw-tls-cert
     - hosts:
         - importer-service.icode.mywire.org
-      secretName: business-gw-tls-cert
+      secretName: importer-gw-tls-cert
 
   rules:
     - host: data-service.icode.mywire.org
