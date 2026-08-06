@@ -18,15 +18,19 @@ if [ -z "${ES_PW:-}" ]; then
   exit 1
 fi
 
+TMO="master_timeout=10m&timeout=10m"
+
 es() {
   local method="$1" path="$2" body="${3:-}"
+  local sep="?"
+  case "$path" in *\?*) sep="&";; esac
   if [ -n "$body" ]; then
     $KUBECTL -n "$NS" exec "sts/$STS" -c elasticsearch -- \
-      curl -sS -k -u "elastic:$ES_PW" -X "$method" "https://localhost:9200$path" \
+      curl -sS -k --max-time 900 -u "elastic:$ES_PW" -X "$method" "https://localhost:9200${path}${sep}${TMO}" \
       -H 'Content-Type: application/json' -d "$body"
   else
     $KUBECTL -n "$NS" exec "sts/$STS" -c elasticsearch -- \
-      curl -sS -k -u "elastic:$ES_PW" -X "$method" "https://localhost:9200$path"
+      curl -sS -k --max-time 900 -u "elastic:$ES_PW" -X "$method" "https://localhost:9200$path"
   fi
   echo
 }
@@ -34,6 +38,10 @@ es() {
 section "before"
 df -h /
 es GET "/_cat/indices/.ds-filebeat*?v&h=index,docs.count,store.size&s=store.size:desc"
+echo "--- cluster health:"
+es GET "/_cluster/health?pretty" | grep -E '"(status|number_of_pending_tasks|initializing_shards|unassigned_shards|task_max_waiting_in_queue_millis)"'
+echo "--- heap:"
+es GET "/_cat/nodes?v&h=name,heap.percent,ram.percent,cpu,load_1m"
 
 echo
 echo "this deletes filebeat log data older than $RETENTION (kept: last $RETENTION only)"
